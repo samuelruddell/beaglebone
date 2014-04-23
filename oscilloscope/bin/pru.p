@@ -50,8 +50,7 @@
       LBBO r9, r21, 0, 4                // load 4 bytes from FIFO into r9
     
     PACK:                               // pack DAC and ADC data into a single 32-bit register
-      MOV r6.w2, r7.w0                  // DAC value
-      MOV r6.w0, r9.w0                  // ADC value
+      MOV r9.w2, r7.w0                  // DAC value
 
 /* PRE-LOOP */
       QBBC SEMICLOSEDLOOP, r4.t0        // do semi-closed / closed loop if bit[0] (open/closed loop) clear
@@ -66,7 +65,7 @@
       AUTOLOCK_BELOW:
         QBLT OPENLOOP, r9.w0, r11.w0    // do open loop if autolock condition not met  
     AUTOLOCK:
-        SUB r18, r9, r11.w0             // set an initial value for previous error signal
+        SUB r18, r9.w0, r11.w0          // set an initial value for previous error signal
         CLR r4.t17                      // unprime semi-closed loop
         SET r4.t18                      // set internal autolock status (perform closed loop)
         SET r4.t0                       // temporarily set closed loop for adc_setup
@@ -120,14 +119,14 @@
         SEMI_TRANSITION:
           QBNE ENDLOOP, r11.w2, r7.w0   // continue semi-closed loop if values not equal
                                         // otherwise transition to closed loop
-          SUB r18, r9, r11.w0           // set an initial value for previous error signal
+          SUB r18, r9.w0, r11.w0        // set an initial value for previous error signal
           CLR r4.t17                    // unprime semi-closed loop
 
           JAL r23.w0, SETUP_ADC         // setup adc for closed loop
 
 /* CLOSED LOOP */
     CLOSEDLOOP:
-        SUB r19, r9, r11.w0             // calculate error signal as ADC - YLOCK
+        SUB r19, r9.w0, r11.w0          // calculate error signal as ADC - YLOCK
 
       PROPORTIONAL:
         MOV r28, r19                    // error signal value to MAC as operand 1
@@ -194,7 +193,7 @@
             MOV r1, 0x0                 // min output
 
         ENDCLOSED:                      
-          MOV r6.w2, r1.w0              // pack correct value for oscilloscope
+          MOV r9.w2, r1.w0              // pack correct value for oscilloscope
           LSL r1, r1.w0, 6              // ensure correct output to DAC, initial DAC value stored in r7
           SET r1.t22
           QBA SPI_CHECK
@@ -217,7 +216,7 @@
     WRITEDATA:
       QBBC ARM_INTERRUPT, r4.t31        // skip write if disabled
       SBCO r8, c25, r3.w0, 4            // store time in PRU_DATARAM_0, offset r3.w0
-      SBCO r6, c24, r3.w0, 4            // store packed data in PRU_DATARAM_1, offset r3.w0
+      SBCO r9, c24, r3.w0, 4            // store packed data in PRU_DATARAM_1, offset r3.w0
       ADD r3.w0, r3.w0, 4               // increment counter
       QBA INT_CHECK                     // if writing enabled, no need for ARM interrupt check
     

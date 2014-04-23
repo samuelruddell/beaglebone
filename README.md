@@ -16,10 +16,10 @@ To compile the software, ensure you have all the correct compilers (gcc, pasm). 
 | r3            | w2: MEMORY SIZE               w0: WRITE COUNTER       |
 | r4            | BOOLS 	                        |
 | r5            |                                       |
-| r6            | PACKED DATA                           |
+| r6            |                                       |
 | r7            | DAC VALUE                             |
 | r8            | TIME                                  |
-| r9            | ADC                                   |
+| r9            | w2: DAC VALUE (PACKED)	w0: ADC                 |
 | r10           | w2: OPEN LOOP SCAN POINT      w0: OPEN LOOP AMPLITUDE |
 | r11           | w2: XLOCK	                w0: YLOCK / AUTOLOCK POINT|
 | r12           | PGAIN                                 |
