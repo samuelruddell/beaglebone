@@ -122,7 +122,7 @@ AWAIT:
 
 /* SPI SEND DATA TO DAC */
       SPI_BUILDWORD:                    // prepare data for sending to DAC AD5545      
-        MOV r21.w2, 0x2                 // SET r21.t17 -- designates slow DAC
+        MOV r21.w2, 0x1                 // SET r21.t16 -- designates slow DAC
 
       QBEQ SPI_END, r20, r21            // no need to use SPI if result is the same
       SPI_SEND:
