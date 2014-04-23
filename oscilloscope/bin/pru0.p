@@ -20,20 +20,20 @@ AWAIT:
     QBBC AWAIT, r4.t15                  // check whether DAC enabled
 
      /* ACCUMULATION AVERAGING LOGIC */
-        QBEQ ACCUM_PREP, r6.b2, 0x0     // skip accumulator if no accumulation called for
+        QBEQ ACCUM_PREP, r1.b2, 0x0     // skip accumulator if no accumulation called for
         ADD r3, r3, r9.w0               // add current ADC reading to accumulator
-        ADD r6.w0, r6.w0, 1             // increase accumulation
-        QBBS ACCUM_FULL, r6, r6.b2      // if number of accumulations reached (powers of 2)
+        ADD r1.w0, r1.w0, 1             // increase accumulation
+        QBBS ACCUM_FULL, r1, r1.b2      // if number of accumulations reached (powers of 2)
         QBA AWAIT                       // more readings needed for accumulation averaging
 
         ACCUM_FULL:
-          LSR r3, r3, r6.b2             // average all values in r3 (floor remainder)
+          LSR r3, r3, r1.b2             // average all values in r3 (floor remainder)
           MOV r9.w0, r3.w0              // move averaged ADC value to r9.w0 for processing
           MOV r3, 0x0                   // clear accumulator
-          MOV r6.w0, 0x0                // clear accumulator counts
+          MOV r1.w0, 0x0                // clear accumulator counts
 
         ACCUM_PREP:
-          MOV r6.b2, r6.b3              // number of averages may have changed due to LOAD_PARAMETERS
+          MOV r1.b2, r6.b3              // number of averages may have changed due to LOAD_PARAMETERS
 
     /* PID LOGIC */
       PERFORM_CLOSED_LOOP:
