@@ -144,6 +144,7 @@ unsigned int mysqlGetParameters(MYSQL *conn, unsigned int *pruSharedDataMemory_i
 	MYSQL_ROW row;
 
 	int mem_offset, mem_value;
+	unsigned int bOpenClose		= 0;
 	unsigned int runScope           = 0;
 	unsigned int pruBooleans        = 0x0;
 	unsigned int xlock_ylock        = 0x0;
@@ -166,6 +167,9 @@ unsigned int mysqlGetParameters(MYSQL *conn, unsigned int *pruSharedDataMemory_i
 			case 1 :
 				if (mem_value==1){
 					pruBooleans |= 0x1;     		// open/closed loop
+					bOpenClose = 1;
+				} else {
+					bOpenClose = 0;
 				}
 				break;
 			case 19 :
@@ -174,9 +178,9 @@ unsigned int mysqlGetParameters(MYSQL *conn, unsigned int *pruSharedDataMemory_i
 				}
 				break;
 			case 20 :
-				if (mem_value==1){
+				/*if (mem_value==1){
 					pruBooleans |= 0x4;     		// auto integrator reset
-				}
+				}*/
 				break;
 			case 23 :
 				if (mem_value==1){
@@ -242,6 +246,7 @@ unsigned int mysqlGetParameters(MYSQL *conn, unsigned int *pruSharedDataMemory_i
 
 	// clean up and return runScope
 	mysql_free_result(result);	
+	runScope = runScope & bOpenClose;
 	return runScope;
 }
 

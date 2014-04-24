@@ -249,7 +249,6 @@
       LBBO r4.w0, r1, BOOLEANS, 2       // load externally set booleans into r4.w0
                                         // bit[0]: OPEN / CLOSED LOOP
                                         // bit[1]: INTEGRATOR RESET
-                                        // bit[2]: AUTOMATIC INTEGRATOR RESET ON OVERFLOW / UNDERFLOW
                                         // bit[3]: LOCK SLOPE
                                         // bit[15]: ENABLE FAST DAC
 
