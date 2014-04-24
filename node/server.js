@@ -1,5 +1,5 @@
-var app			= require('http').createServer(handler),
-    io			= require('socket.io').listen(app),
+var server		= require('http').createServer(handler),
+    io			= require('socket.io').listen(server),
     fs			= require('fs'),
     mysql		= require('mysql'),
     connectionsArray 	= [],
@@ -23,20 +23,27 @@ connection.connect(function(err) {
 });
 
 // create web server
-app.listen(8133);
+server.listen(8133);
 
 // when server ready, load main.html page
 function handler(request, response) {
-  fs.readFile( __dirname + '/main.html', function( err, data) {
+  var file = undefined;
+  if(request.url === '/js/jquery.js' || request.url === '/js/jquery.flot.js') {
+    file = request.url;
+  } else {
+    file = '/main.html';
+  }
+  fs.readFile( __dirname + file, function( err, data) {
     if (err) {
       console.log(err);
-      response.writeHead(500); 	// internal error
-      return response.end('Error loading main.html');
+      response.writeHead(500);	// internal error
+      return response.end('Error with request');
     }
     response.writeHead(200); 	// request OK
     response.end(data);		// respond with html page
   });
 }
+
 
 // polling loop
 var pollingLoop = function() {
@@ -78,7 +85,7 @@ io.sockets.on('connection', function(socket) {
 
   socket.on('disconnect', function() {
     var socketIndex = connectionsArray.indexOf(socket);
-    console.log('socketID = %s disconnected', socketIndex);
+    console.log('socketID %s disconnected', socketIndex);
     if (~socketIndex) {
       connectionsArray.splice(socketIndex, 1);
     }
