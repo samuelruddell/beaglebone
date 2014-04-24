@@ -41,7 +41,7 @@ socket.on('data', function (data) {
   if($('#MODE').val() == "2"){
     // plot lockpoint as red circle
     var lockPoint = [[$('#XLOCK').val(), $('#YLOCK').val()]];
-    $.plot("#oscilloscope", [data.data, {data:lockPoint, points:{show:true}, color:"#ff0000"}, {
+    $.plot("#oscilloscope", [data.data, {data:lockPoint, points:{show:true}, color:"#ff0000"}], {
       series: {
         shadowSize: 0     // Drawing is faster without shadows
       },
