@@ -1,16 +1,16 @@
 <!doctype html>
 <html>
   <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>BeagleBone Black Oscilloscope</title>
+	
+	<!-- scripts loaded first -->
 	<script src="/socket.io/socket.io.js"></script>
-	<script src="/js/jquery.js"></script>
-	<!--flot-->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
         <script src="/js/jquery.flot.js"></script>
-	<!--bootstrap-->
-	<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
-	<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<!--script to update oscilloscope when data is pushed from server to client-->
+
+	<!-- script to update oscilloscope when data is pushed from server to client -->
 	<script>
 	  var socket = io();
 	  socket.on('notification', function (data) {
@@ -20,30 +20,47 @@
   </head>
   <body>
 	<div class="container">
-	  <!--Oscilloscope plot-->
+
+	  <!-- Oscilloscope plot -->
 	  <div id="oscilloscope" style="width:100%;height:512px"></div>
-	  <!--bootstrap navbar-->
+
+	  <!-- Tabs -->
+	  <ul class="nav nav-tabs">
+	    <li class="active"><a data-toggle="tab" href="#openLoop">Open Loop</a></li>
+	    <li><a data-toggle="tab" href="#closedLoop">Closed Loop</a></li>
+	  </ul>
+
+	  <!-- tab content -->
+	  <div class="tab-content">
+	    <div id="openLoop" class="tab-pane fade in active">
+	    </div>
+	    <div id="closedLoop" class="tab-pane fade">
+	    </div>
+	  </div>
+
+	  <!-- bootstrap navbar -->
 	  <nav class="navbar navbar-inverse navbar-fixed-bottom">
 	    <div class="container">
 	      <div class="navbar-header">
 		<a class="navbar-brand">BeagleBone Black Oscilloscope</a>
-		<form action="">
-		  <button class="btn btn-primary navbar-btn" aria-expanded="false">RUN</button>
-		</form>
+		<button onclick="run()" class="btn btn-primary navbar-btn" aria-expanded="false">RUN</button>
+
+		<!-- run function -->
 	   	<script>
+		function run(){
 	    	  var socket = io();
-	    	  $('form').submit(function() {
 	      	  socket.emit('run');
 	      	  return false;
-	    	});
+		}
 	  	</script>
 	      </div>
 	    </div>
 	  </nav>
-	  <!--RUN button
-	  <form action="">
-	    <button>RUN</button>
-  	  </form>-->
+
 	</div>
+
+	<!-- bootstrap scripts -->
+	<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+	<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
   </body>
 </html>
