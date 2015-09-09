@@ -20,20 +20,20 @@
 INIT:
 
   // enable OCP master ports
-  LBCO r0, C4, 4, 4		// SYSCFG register
-  CLR r0, r0, 4			// enable OCP master ports
-  SBCO r0, C4, 4, 4
+  LBCO r20, C4, 4, 4		// SYSCFG register
+  CLR r20, r0, 4		// enable OCP master ports
+  SBCO r20, C4, 4, 4		// store SYSCFG settings
 
-  MOV r1, CTPPR_0		// Constant Table Programmable Pointer Table
+  MOV r1, CTPPR_0		// Constant Table Programmable Pointer
   MOV r2, 0x240			// set up C28 as CTRL register pointer
-  SBBO r2, r1, 0, 4	        // store address easy reference later
+  SBBO r2, r1, 0, 4	        // store address for easy reference later
 
-  LBCO r2, C28, 0, 4		// load in CYCLE settings
-  SET r2, 3			// set bit 3 to enable CYCLE
-  SBCO r2, C28, 0, 4		// store CYCLE settings
+  LBCO r20, C28, 0, 4		// load in CYCLE settings
+  SET r20, 3			// set bit 3 to enable CYCLE
+  SBCO r20, C28, 0, 4		// store CYCLE settings
 
-  MOV r5, 0			// step counter register
-  MOV r6, 2048 << 2		// steps until interrupt * 4
+  MOV r5.w0, 0			// step counter register
+  MOV r6, 2048 << 2		// steps until interrupt * 4 (for 8192 bytes of memory)
 
 ADC_INIT:
   MOV r1, PRU_DATARAM_1		// DATARAM address
@@ -60,30 +60,45 @@ ADC_INIT:
   MOV r4, 0x5
   SBBO r4, r2, CTRL, 4		// enable ADC to start oscilloscope
 
-WAIT:		
+WAIT:
   LBBO r4, r2, FIFOCOUNT, 4	// check for words in FIFO0
   QBEQ WAIT, r4, 0		// WAIT until word present in FIFO0
 
 READ:
-  LBCO r11, c28, 0xC, 4         // load in CYCLE COUNT
+  LBCO r11, C28, 0xC, 4         // load in CYCLE COUNT
   LBBO r4, r3, 0, 4		// load 4 bytes from FIFO into r4
 
 PACK:				// pack data into 32 bit register
   LSL r11, r11, 12		// use bits[31:12] for time
-  OR r11, r11, r4		// pack as: time=bits[31:12], adc=bits[11:0]
+  OR r11, r11, r4		// pack as: time->bits[31:12], adc->bits[11:0]
 
-USEDATA:
-  SBBO r11, r1, r5, 4		// store data in PRU_DATARAM_1
-  ADD r5, r5, 4			// increment counter
+WRITEDATA:
+  SBBO r11, r1, r5.w0, 4	// store data in PRU_DATARAM_1
+  ADD r5.w0, r5.w0, 4		// increment counter
 
-  QBNE WAIT, r5, r6		// check if enough samples taken
+CHECK:
+  SET r20, 3			// set bit 3 to enable CYCLE
+  SBCO r20, C28, 0, 4		// store CYCLE settings
 
-DEINIT:
-  MOV r4, 0x0			// disable STEPENABLE
-  SBBO r4, r2, STEPENABLE, 4
+INTERRUPT_CHECK:
+  QBNE WAIT, r5.w0, r6          // check number of samples taken
 
 INTERRUPT:
   MOV r31.b0, PRU_INTERRUPT | PRU_EVTOUT_0
+  CLR r20, 3			// clear bit 3 to disable CYCLE
+  SBCO r20, C28, 0, 4		// store CYCLE settings
+  MOV r21, 0x0			// 0x0 to reset CYCLE count to zero
+  SBCO r21, C28, 0xC, 4         // clear CYCLE counter
+  SET r20, 3			// set bit 3 to enable CYCLE
+  SBCO r20, C28, 0, 4		// store CYCLE settings 
+
+  MOV r5, 0                     // start from 0th memory address
+
+  QBA WAIT
+
+DEINIT:
+  MOV r4, 0x0			// disable STEPENABLE
+  SBBO r4, r2, STEPENABLE, 4    // store STEPENABLE settings
 
 QUIT:
   HALT

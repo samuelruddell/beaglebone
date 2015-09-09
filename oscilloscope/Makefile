@@ -2,7 +2,8 @@ CROSS_COMPILE?=
 BINDIR?=./bin
 
 CFLAGS+= -Wall  -D__DEBUG -O2 -mtune=cortex-a8 -march=armv7-a
-LDFLAGS= -lprussdrv -lpthread
+LDFLAGS= -lprussdrv -lpthread 
+
 OBJDIR=obj
 TARGET=$(BINDIR)/oscilloscope
 
@@ -14,7 +15,7 @@ $(OBJDIR)/%.o: %.c
 	$(CROSS_COMPILE)gcc $(CFLAGS) -c -o $@ $<
 
 $(TARGET): $(OBJ) 
-	$(CROSS_COMPILE)gcc $(CFLAGS) -o $@ $^ $(LDFLAGS)
+	$(CROSS_COMPILE)gcc $(CFLAGS) -o $@ $^ $(LDFLAGS) `mysql_config --cflags --libs`
 
 .PHONY: clean
 
