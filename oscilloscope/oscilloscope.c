@@ -88,6 +88,7 @@ int main (int argc, char **argv)
 		mysqlStrPointer += sprintf(mysqlStrPointer, "REPLACE INTO data (i, time, adc) VALUES");
 
 		/* Build string for inserting data */
+         	// note: does not account for pru writes overtaking reads 
 		for(i=0; i<2048; i++){
 			data[i] = *(pru1DataMemory_int + i);
 			// time[i] = data[i] >> 12;		// unpack time data

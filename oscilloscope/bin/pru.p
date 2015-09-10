@@ -85,6 +85,7 @@ INTERRUPT_CHECK:
 
 INTERRUPT:
   MOV r31.b0, PRU_INTERRUPT | PRU_EVTOUT_0
+
   CLR r20, 3			// clear bit 3 to disable CYCLE
   SBCO r20, C28, 0, 4		// store CYCLE settings
   MOV r21, 0x0			// 0x0 to reset CYCLE count to zero
