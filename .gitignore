@@ -1,3 +1,4 @@
 *.o
 *.bin
 oscilloscope/bin/oscilloscope
+node/js/*
