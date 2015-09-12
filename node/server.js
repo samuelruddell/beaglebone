@@ -25,7 +25,7 @@ connection.connect(function(err) {
 // create web server
 server.listen(8133);
 
-// when server ready, load main.html page
+// serve static content
 function handler(request, response) {
   var file = undefined;
   if(request.url === '/js/jquery.js' || request.url === '/js/jquery.flot.js') {
@@ -77,11 +77,19 @@ var pollingLoop = function() {
 
 // create websocket connection to keep content updated
 io.sockets.on('connection', function(socket) {
+
+  socket.on('run', function() {
+    // run button pressed
+    connection.query('REPLACE INTO parameters (name, value) VALUES ("RUN", 1)');
+    return;
+  });
+
   console.log('Number of connections:' + connectionsArray.length);
   // only if at least one connection
   if (!connectionsArray.length) {
     pollingLoop();
   }
+
 
   socket.on('disconnect', function() {
     var socketIndex = connectionsArray.indexOf(socket);
