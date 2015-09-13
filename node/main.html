@@ -10,7 +10,7 @@
 	<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
 	<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<!--script to update oscilloscope when data is pushed from server to clients-->
+	<!--script to update oscilloscope when data is pushed from server to client-->
 	<script>
 	  var socket = io();
 	  socket.on('notification', function (data) {
@@ -20,21 +20,30 @@
   </head>
   <body>
 	<div class="container">
-	  <!--Header-->
-	  <div id="header"><h2>BeagleBone Black Oscilloscope</h2></div>
 	  <!--Oscilloscope plot-->
 	  <div id="oscilloscope" style="width:100%;height:512px"></div>
-	  <!--RUN button-->
+	  <!--bootstrap navbar-->
+	  <nav class="navbar navbar-inverse navbar-fixed-bottom">
+	    <div class="container">
+	      <div class="navbar-header">
+		<a class="navbar-brand">BeagleBone Black Oscilloscope</a>
+		<form action="">
+		  <button class="btn btn-primary navbar-btn" aria-expanded="false">RUN</button>
+		</form>
+	   	<script>
+	    	  var socket = io();
+	    	  $('form').submit(function() {
+	      	  socket.emit('run');
+	      	  return false;
+	    	});
+	  	</script>
+	      </div>
+	    </div>
+	  </nav>
+	  <!--RUN button
 	  <form action="">
 	    <button>RUN</button>
-  	  </form>
-	  <script>
-	    var socket = io();
-	    $('form').submit(function() {
-	      socket.emit('run');
-	      return false;
-	    });
-	  </script>
+  	  </form>-->
 	</div>
   </body>
 </html>
