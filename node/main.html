@@ -1,10 +1,10 @@
 <!doctype html>
 <html>
   <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>BeagleBone Black Oscilloscope</title>
-	
+    	<meta charset="utf-8">
+    	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>BeagleBone Black Oscilloscope</title>
+
 	<!-- scripts loaded first -->
 	<script src="/socket.io/socket.io.js"></script>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
@@ -32,9 +32,56 @@
 
 	  <!-- tab content -->
 	  <div class="tab-content">
+
+	    <!-- open loop tab -->
 	    <div id="openLoop" class="tab-pane fade in active">
+	      <h3><!--------></h3>
+	      <form class="form-inline" autocomplete="off">
+		<div class="form-group">
+		  <label for="openAmpl" class="col-xs-4 control-label">Amplitude</label>
+        	  <div class="col-xs-8 input-group">
+		    <input type="text" class="form-control" id="openAmpl" placeholder="">
+		    <div class="input-group-addon">V</div>
+	          </div>
+		  <h3><!--------></h3>
+		  <div class="form-group">
+		    <label for="openFreq" class="col-xs-4 control-label">Frequency</label>
+        	    <div class="col-xs-8 input-group">
+		      <input type="text" class="form-control" id="openFreq" placeholder="">
+		      <div class="input-group-addon">Hz</div>
+		    </div>
+	          </div>
+    	        </div>
+	      </form>
 	    </div>
+
+	    <!-- closed loop tab -->
 	    <div id="closedLoop" class="tab-pane fade">
+	      <h3><!--------></h3>
+	      <form class="form-inline" autocomplete="off">
+		<div class="form-group">
+		  <label for="closedFreq" class="col-xs-4 control-label">Frequency</label>
+		  <div class="col-xs-8 input-group">
+		    <input type="text" class="form-control" id="closedFreq" placeholder="">
+		    <div class="input-group-addon">Hz</div>
+		  </div>
+		  <h3><!--------></h3>
+		  <label for="closedkP" class="col-xs-4 control-label">Proportional</label>
+		  <div class="col-xs-8 input-group">
+		    <input type="text" class="form-control" id="closedkP" placeholder="">
+		  </div>
+		  <h3><!--------></h3>
+		  <label for="closedkI" class="col-xs-4 control-label">Integral</label>
+		  <div class="col-xs-8 input-group">
+		    <input type="text" class="form-control" id="closedkI" placeholder="">
+		  </div>
+		  <h3><!--------></h3>
+		  <label for="closedkD" class="col-xs-4 control-label">Derivative</label>
+		  <div class="col-xs-8 input-group">
+		    <input type="text" class="form-control" id="closedkD" placeholder="">
+		  </div>
+	        </div>
+	      </form>
 	    </div>
 	  </div>
 
@@ -50,14 +97,13 @@
 		function run(){
 	    	  var socket = io();
 	      	  socket.emit('run');
-	      	  return false;
 		}
 	  	</script>
 	      </div>
 	    </div>
 	  </nav>
 
-	</div>
+	</div><!-- container -->
 
 	<!-- bootstrap scripts -->
 	<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
