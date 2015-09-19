@@ -14,8 +14,6 @@
 
 #define PRU_0	   	0
 #define PRU_1      	1
-#define PRU0_DATARAM 	0x00000000
-#define PRU1_DATARAM 	0x00002000
 
 /* mysql global variables */
 static char *host = "localhost";
@@ -26,15 +24,6 @@ static char *dbname = "scope";
 unsigned int port = 3306;
 static char *unix_socket = NULL;
 unsigned int flag = 0;
-
-
-/* IRQ handler thread */
-void *pruevtout0_thread(void *arg) {
-	do {
-		prussdrv_pru_wait_event (PRU_EVTOUT_0);
-		prussdrv_pru_clear_event (PRU_EVTOUT_0, PRU1_ARM_INTERRUPT);
-	} while (1);
-}
 
 int main (int argc, char **argv)
 {
@@ -72,13 +61,14 @@ int main (int argc, char **argv)
 	/* Load and execute binary on PRU */
 	prussdrv_exec_program (PRU_1, "./pru.bin");
 
-	// query database for the value of runScope, wait until value = 1
 	while(1) {
+
+		// check database for RUN
 		mysql_query(conn, "SELECT value FROM parameters WHERE name = 'RUN' LIMIT 1");
 		result = mysql_store_result(conn);
 		row = mysql_fetch_row(result);
 
-		// check whether runScope == "1"
+		// check whether RUN == "1"
 		if(!strncmp(row[0], "1", 1)){
 			runScope = 1;
 		} else {
@@ -88,13 +78,13 @@ int main (int argc, char **argv)
 
 		/* run oscilloscope */
 		while(runScope){
-			/* interrupt PRU */
+
+			/* send interrupt to PRU and wait for EVTOUT */
 			// event 17 maps to r31.t31, event 18 maps to r31.t30
 			prussdrv_pru_send_wait_clear_event  ( 18, PRU_EVTOUT_0, 18);
 
 			/* Read PRU memory and store in MySQL database */
 			char *mysqlStrPointer = mysqlStr;
-			// note have to check this for multiple loops
 			mysqlStrPointer += sprintf(mysqlStrPointer, "REPLACE INTO data (i, time, adc) VALUES");
 
 			/* Build string for inserting data */
@@ -126,6 +116,7 @@ int main (int argc, char **argv)
 	return 0;
 }
 
+/* Connect to MySQL database */
 MYSQL * mysqlConnect(){
 	MYSQL *conn;
 
@@ -139,10 +130,12 @@ MYSQL * mysqlConnect(){
 	return conn;
 }
 
+/* Disconnect from MySQL database */
 void mysqlDisconnect(MYSQL *conn){
 	mysql_close(conn);
 }
 
+/* Print MySQL error */
 void mysqlError(MYSQL *conn){
 	fprintf(stderr, "%s\n", mysql_error(conn));
 	mysql_close(conn);
