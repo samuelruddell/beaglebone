@@ -1,6 +1,6 @@
 var app			= require('express')(),
-    server		= require('http').Server(app),
-    io			= require('socket.io')(server),
+    http		= require('http').Server(app),
+    io			= require('socket.io')(http),
     mysql		= require('mysql'),
     connectionsArray 	= [],
     connection		= mysql.createConnection({
@@ -23,7 +23,7 @@ connection.connect(function(err) {
 });
 
 // create web server
-server.listen(8133);
+http.listen(8133);
 
 // serve static content
 app.get('/', function (req, res) {
@@ -32,6 +32,10 @@ app.get('/', function (req, res) {
 	
 app.get('/js/jquery.flot.js', function (req, res) {
   res.sendFile(__dirname + '/js/jquery.flot.js');
+});
+
+app.use(function(req, res, next) {
+  res.status(404).send('<html><h3>There is nothing here...</h3></html>');
 });
 
 // polling loop

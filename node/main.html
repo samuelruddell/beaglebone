@@ -35,18 +35,18 @@
 
 	    <!-- open loop tab -->
 	    <div id="openLoop" class="tab-pane fade in active">
-	      <h3><!--------></h3>
+	      <h3><!--    --></h3>
 	      <form class="form-inline" autocomplete="off">
 		<div class="form-group">
 		  <label for="openAmpl" class="col-xs-4 control-label">Amplitude</label>
         	  <div class="col-xs-8 input-group">
-		    <input type="text" class="form-control" id="openAmpl" placeholder="">
+		    <input type="number" class="form-control" id="openAmpl" step="1" min="0" max="65536" placeholder="">
 		    <div class="input-group-addon">V</div>
 	          </div>
-		  <h3><!--------></h3>
+		  <h3><!--    --></h3>
 		  <label for="openFreq" class="col-xs-4 control-label">Frequency</label>
         	  <div class="col-xs-8 input-group">
-		    <input type="text" class="form-control" id="openFreq" placeholder="">
+		    <input type="number" class="form-control" id="openFreq" placeholder="">
 		    <div class="input-group-addon">Hz</div>
 		  </div>
     	        </div>
@@ -55,28 +55,28 @@
 
 	    <!-- closed loop tab -->
 	    <div id="closedLoop" class="tab-pane fade">
-	      <h3><!--------></h3>
+	      <h3><!--    --></h3>
 	      <form class="form-inline" autocomplete="off">
 		<div class="form-group">
 		  <label for="closedFreq" class="col-xs-4 control-label">Frequency</label>
 		  <div class="col-xs-8 input-group">
-		    <input type="text" class="form-control" id="closedFreq" placeholder="">
+		    <input type="number" class="form-control" id="closedFreq" placeholder="">
 		    <div class="input-group-addon">Hz</div>
 		  </div>
-		  <h3><!--------></h3>
+		  <h3><!--    --></h3>
 		  <label for="closedkP" class="col-xs-4 control-label">Proportional</label>
 		  <div class="col-xs-8 input-group">
-		    <input type="text" class="form-control" id="closedkP" placeholder="">
+		    <input type="number" class="form-control" id="closedkP" placeholder="">
 		  </div>
-		  <h3><!--------></h3>
+		  <h3><!--    --></h3>
 		  <label for="closedkI" class="col-xs-4 control-label">Integral</label>
 		  <div class="col-xs-8 input-group">
-		    <input type="text" class="form-control" id="closedkI" placeholder="">
+		    <input type="number" class="form-control" id="closedkI" placeholder="">
 		  </div>
-		  <h3><!--------></h3>
+		  <h3><!--    --></h3>
 		  <label for="closedkD" class="col-xs-4 control-label">Derivative</label>
 		  <div class="col-xs-8 input-group">
-		    <input type="text" class="form-control" id="closedkD" placeholder="">
+		    <input type="number" class="form-control" id="closedkD" placeholder="">
 		  </div>
 	        </div>
 	      </form>
@@ -93,7 +93,6 @@
 		<!-- run function -->
 	   	<script>
 		function run(){
-	    	  var socket = io();
 	      	  socket.emit('run');
 		}
 	  	</script>
