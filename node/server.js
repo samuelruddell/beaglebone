@@ -1,6 +1,6 @@
-var server		= require('http').createServer(handler),
-    io			= require('socket.io').listen(server),
-    fs			= require('fs'),
+var app			= require('express')(),
+    server		= require('http').Server(app),
+    io			= require('socket.io')(server),
     mysql		= require('mysql'),
     connectionsArray 	= [],
     connection		= mysql.createConnection({
@@ -10,7 +10,7 @@ var server		= require('http').createServer(handler),
 	database : 'scope',
 	port	 : 3306
     }),
-    POLLING_INTERVAL = 200,
+    POLLING_INTERVAL = 500,
     pollingTimer;
 
 // connect to MySQL database
@@ -26,24 +26,13 @@ connection.connect(function(err) {
 server.listen(8133);
 
 // serve static content
-function handler(request, response) {
-  var file = undefined;
-  if(request.url === '/js/jquery.js' || request.url === '/js/jquery.flot.js') {
-    file = request.url;
-  } else {
-    file = '/main.html';
-  }
-  fs.readFile( __dirname + file, function( err, data) {
-    if (err) {
-      console.log(err);
-      response.writeHead(500);	// internal error
-      return response.end('Error with request');
-    }
-    response.writeHead(200); 	// request OK
-    response.end(data);		// respond with html page
-  });
-}
-
+app.get('/', function (req, res) {
+  res.sendFile(__dirname + '/main.html');
+});
+	
+app.get('/js/jquery.flot.js', function (req, res) {
+  res.sendFile(__dirname + '/js/jquery.flot.js');
+});
 
 // polling loop
 var pollingLoop = function() {
@@ -54,7 +43,6 @@ var pollingLoop = function() {
   // set up query listeners
   query
   .on('error', function(err) {
-    // error
     console.log(err);
     updateSockets(err);
   })
@@ -80,7 +68,8 @@ io.sockets.on('connection', function(socket) {
 
   socket.on('run', function() {
     // run button pressed
-    connection.query('REPLACE INTO parameters (name, value) VALUES ("RUN", 1)');
+    // connection.query('REPLACE INTO parameters (name, value) VALUES ("RUN", 1)');
+    connection.query('UPDATE parameters SET value = value XOR 1 WHERE name = "RUN"');
     return;
   });
 
@@ -90,10 +79,9 @@ io.sockets.on('connection', function(socket) {
     pollingLoop();
   }
 
-
   socket.on('disconnect', function() {
     var socketIndex = connectionsArray.indexOf(socket);
-    console.log('socketID %s disconnected', socketIndex);
+    console.log('socket %s disconnected', socketIndex);
     if (~socketIndex) {
       connectionsArray.splice(socketIndex, 1);
     }
