@@ -1,4 +1,5 @@
-var app			= require('express')(),
+var express		= require('express'),
+    app			= express(),
     http		= require('http').Server(app),
     io			= require('socket.io')(http),
     mysql		= require('mysql'),
@@ -23,21 +24,15 @@ connection.connect(function(err) {
 });
 
 // create web server
-http.listen(8133);
+http.listen(8134);
 
 // serve static content
+app.use(express.static('public'));
+
 app.get('/', function (req, res) {
   res.sendFile(__dirname + '/main.html');
 });
 	
-app.get('/js/jquery.flot.js', function (req, res) {
-  res.sendFile(__dirname + '/js/jquery.flot.js');
-});
-
-app.use(function(req, res, next) {
-  res.status(404).send('<html><h3>There is nothing here...</h3></html>');
-});
-
 // polling loop
 var pollingLoop = function() {
   // query database
@@ -72,7 +67,6 @@ io.sockets.on('connection', function(socket) {
 
   socket.on('run', function() {
     // run button pressed
-    // connection.query('REPLACE INTO parameters (name, value) VALUES ("RUN", 1)');
     connection.query('UPDATE parameters SET value = value XOR 1 WHERE name = "RUN"');
     return;
   });
@@ -100,3 +94,4 @@ var updateSockets = function(data) {
     tmpSocket.volatile.emit('notification', data);
   });
 };
+

@@ -77,7 +77,7 @@ int main (int argc, char **argv)
 		mysql_free_result(result);
 
 		/* run oscilloscope */
-		while(runScope){
+		if(runScope){
 
 			/* send interrupt to PRU and wait for EVTOUT */
 			// event 17 maps to r31.t31, event 18 maps to r31.t30
@@ -85,7 +85,8 @@ int main (int argc, char **argv)
 
 			/* Read PRU memory and store in MySQL database */
 			char *mysqlStrPointer = mysqlStr;
-			mysqlStrPointer += sprintf(mysqlStrPointer, "REPLACE INTO data (i, time, adc) VALUES");
+			mysqlStrPointer += sprintf(mysqlStrPointer, "INSERT INTO data (i, time, adc) VALUES");
+			//mysqlStrPointer += sprintf(mysqlStrPointer, "REPLACE INTO data (i, time, adc) VALUES");
 
 			/* Build string for inserting data */
 			for(i=0; i<2048; i++){
@@ -93,16 +94,21 @@ int main (int argc, char **argv)
 				// time[i] = data[i] >> 12;		// unpack time data
 				// adc[i] = data[i] & 0x0fff;		// 12-bit bitmask for ADC values
 				if (i<2047){
-					mysqlStrPointer += sprintf(mysqlStrPointer, "('%hu', '%u', '%hu'),", i, data[i] >> 12, data[i] & 0x0fff);
+					mysqlStrPointer += sprintf(mysqlStrPointer, "(%hu,%u,%hu),", i, data[i] >> 12, data[i] & 0x0fff);
 				} else {
-					mysqlStrPointer += sprintf(mysqlStrPointer, "('%hu', '%u', '%hu');", i, data[i] >> 12, data[i] & 0x0fff);
+					mysqlStrPointer += sprintf(mysqlStrPointer, "(%hu,%u,%hu)", i, data[i] >> 12, data[i] & 0x0fff);
 				}	
 			}
+
+			mysqlStrPointer += sprintf(mysqlStrPointer, " ON DUPLICATE KEY UPDATE i=VALUES(i), time=VALUES(time), adc=VALUES(adc);");
 
 			/* Insert data to table */
 			if (mysql_query(conn, mysqlStr)) {
 				mysqlError(conn);
 			}
+
+			/* sleep for performance reasons */
+			sleep(0.5);
 		}
 	}
 
