@@ -82,6 +82,7 @@ int main (int argc, char **argv)
 			/* send interrupt to PRU and wait for EVTOUT */
 			// event 17 maps to r31.t31, event 18 maps to r31.t30
 			prussdrv_pru_send_wait_clear_event  ( 18, PRU_EVTOUT_0, 18);
+			prussdrv_pru_clear_event (PRU_EVTOUT_0, PRU1_ARM_INTERRUPT);
 
 			/* Read PRU memory and store in MySQL database */
 			char *mysqlStrPointer = mysqlStr;
@@ -100,7 +101,7 @@ int main (int argc, char **argv)
 				}	
 			}
 
-			mysqlStrPointer += sprintf(mysqlStrPointer, " ON DUPLICATE KEY UPDATE i=VALUES(i), time=VALUES(time), adc=VALUES(adc);");
+			mysqlStrPointer += sprintf(mysqlStrPointer, " ON DUPLICATE KEY UPDATE i=VALUES(i), time=VALUES(time), adc=VALUES(adc)");
 
 			/* Insert data to table */
 			if (mysql_query(conn, mysqlStr)) {
