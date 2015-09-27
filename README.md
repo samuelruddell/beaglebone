@@ -34,7 +34,6 @@ To compile the sofware, ensure you have all the correct compilers (gcc, pasm). T
 | r21           | ADC_FIFO0                             |
 | r22           | MCSPI_TX1                             |
 | r23           | MCSPI_CH1STAT                         |
-| r23           |                                       |
 | r24           |                                       |
 | r25           | MAC SETTINGS                          |
 | r26           | MAC UPPER PRODUCT                     |
@@ -43,10 +42,10 @@ To compile the sofware, ensure you have all the correct compilers (gcc, pasm). T
 | r29           | MAC OPERAND 2                         |
 | r30           | REALTIME OUT                          |
 | r31           | REALTIME IN / INTERRUPT               |
+|		|					|
+| c24		| PRU 1/0 DATARAM			|
+| c25		| PRU 0/1 DATARAM			|
 | c28           | CYCLE CTRL                            |
-| c29           |                                       |
-| c30           |                                       |
-| c31           |                                       |
 
 ## PRU memory assignment
 | ADDR		| name		|
@@ -55,7 +54,7 @@ To compile the sofware, ensure you have all the correct compilers (gcc, pasm). T
 | 0x4		| OPENCLOSE	|
 | 0x8		| XLOCK		|
 | 0xC		| YLOCK		|
-| 0x10		| TIMEXY	|
+| 0x10		| TIME_XY	|
 | 0x20		| ADC_CLKDIV	|
 | 0x24		| ADC_AVERAGE	|
 | 0x28		| OPENDELAY	|
@@ -65,3 +64,4 @@ To compile the sofware, ensure you have all the correct compilers (gcc, pasm). T
 | 0x44		| IGAIN		|
 | 0x48		| DGAIN		|
 | 0x4C		| IRESET	|
+| 0x50		| LOCKSLOPE	|
