@@ -14,14 +14,14 @@ To compile the sofware, ensure you have all the correct compilers (gcc, pasm). T
 | r1            | TMP ADDR                              |
 | r2            | TMP VALUE                             |
 | r3            | w2: WRITE_EN, w0: WRITE COUNTER       |
-| r4            | MEMORY SIZE / WRITE COUNT LIMIT       |
+| r4            | w2: bools, w0: MEMORY SIZE            |
 | r5            | CYCLE SETTINGS                        |
 | r6            | PACKED DATA                           |
 | r7            | DAC VALUE                             |
 | r8            | TIME                                  |
 | r9            | ADC                                   |
-| r10           | PID SET POINT                         |
-| r11           | DELAY / FREQ                          |
+| r10           | OPEN LOOP AMPLITUDE                   |
+| r11           | PID SET POINT                         |
 | r12           | PGAIN RESULT << 16 \| PGAIN           |
 | r13           | IGAIN RESULT << 16 \| IGAIN           |
 | r14           | IGAIN CALC REGISTER                   |

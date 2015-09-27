@@ -7,10 +7,9 @@
 #define FIFOCOUNT		0x0e4
 #define FIFO 		        0x100
 
-ADC_INIT:
   MOV r20, ADC_		        // ADC address
   MOV r21, ADC_ | FIFO		// FIFO0 address
-
+ADC_INIT:
   // edit CTRL register
   MOV r2, 0x4			// Make step configuration registers writable, disable TSC_ADC_SS
   SBBO r2, r20, CTRL, 4		// Store configuration to ADC_CTRL register
@@ -27,7 +26,7 @@ ADC_INIT:
 
   // Step delay configuration 1
   LBCO r2, c25, 0x28, 4         // number of ADC clock cycles to wait after applying STEPCONFIG1 
-  SBBO r2, r20, STEPDELAY1, 4    // bits[17:0]
+  SBBO r2, r20, STEPDELAY1, 4   // bits[17:0]
 
   // enable ADC STEPCONFIG 1
   MOV r2, 0x2			// Enable step 1 only

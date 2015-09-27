@@ -12,6 +12,15 @@
 
 #define CYCLE			0xc	// CYCLE register
 
+#define OPENCLOSE               0x4     // OPEN or CLOSED LOOP
+#define XLOCK                   0x8     // DAC lock point (for scan to)
+#define YLOCK                   0xc     // PID set point
+#define OPENAMPL                0x34    // open loop ramp amplitude memory offset
+#define PGAIN                   0x40
+#define IGAIN                   0x44
+#define DGAIN                   0x48
+#define IRESET                  0x4c    // reset integrator
+
 /* PERIPHERAL INITIALIZATION */
     INIT:
       // enable OCP master ports
@@ -27,12 +36,22 @@
       SBCO r2, c28, CTBIR0, 4           // ensure c24 and c25 setup correctly
     
       MOV r3, 0				// step counter register, disable writing until ready
-      MOV r4, 2048 << 2		        // steps until interrupt * 4 (for 8192 bytes of memory)
+      MOV r4.w0, 2048 << 2		// steps until interrupt * 4 (for 8192 bytes of memory)
 
       LBCO r5, c28, 0, 4		// load in CYCLE settings
       SET r5, 3				// set bit 3 to enable CYCLE
       SBCO r5, c28, 0, 4		// store CYCLE settings
-    
+
+    INIT_PARAMETERS:
+      LBCO r2, c25, OPENCLOSE, 4        // load open/close bool bit[0]
+      OR r4.w2, r4.w2, r2.w0            // store open/close bool to r4.w2
+      LBCO r10, c25, OPENAMPL, 4        // load open loop ramp amplitude
+      LBCO r11.w2, c25, XLOCK, 2        // load PID controller DAC set point (for scan to)
+      LBCO r11.w0, c25, YLOCK, 2        // load PID controller set point
+      LBCO r12, c25, PGAIN, 4           // load PGAIN
+      LBCO r13, c25, IGAIN, 4           // load IGAIN
+      LBCO r14, c25, DGAIN, 4           // load DGAIN
+
     #include "setup_spi.p"              // setup SPI for data out to DAC
     #include "setup_adc.p"              // ADC definition, setup and start ADC
 
@@ -48,6 +67,16 @@
     PACK:				// pack data into 32 bit register
       LSL r6, r8, 12		        // use bits[31:12] for time, store in r6
       OR r6, r6, r9		        // pack as: time->bits[31:12], adc->bits[11:0]
+
+/* OPEN LOOP */
+    QBBC CLOSEDLOOP, r4.t16             // do close loop if bit clear
+    OPENLOOP:
+      QBA ENDLOOP 
+
+/* CLOSED LOOP */
+    CLOSEDLOOP:
+
+    ENDLOOP:
 
 /* HANDLE STORING DATA TO MEMORY */
     WRITEDATA:
@@ -68,7 +97,7 @@
       SBCO r2, C0, r1, 4              	// C0 is interrupt controller
     
     INT_CHECK:
-      QBNE WAIT, r3.w0, r4              // check number of samples taken
+      QBNE WAIT, r3.w0, r4.w0           // check number of samples taken
     
     INTERRUPT:                          // memory full
       MOV r31.b0, PRU_INTERRUPT | PRU_EVTOUT_0
