@@ -37,12 +37,15 @@ int main (int argc, char **argv)
 	conn = mysqlConnect();
 
 	/* initialise PRU */
+	static void *pru0DataMemory;
+	static unsigned int *pru0DataMemory_int;
 	static void *pru1DataMemory;
 	static unsigned int *pru1DataMemory_int;
 
 	char mysqlStr[60000];
 	unsigned int data[2048];
 	int i;
+	int mem_offset, mem_value;
 
 	/* Initialize structure used by prussdrv_pruintc_intc */
 	tpruss_intc_initdata pruss_intc_initdata = PRUSS_INTC_INITDATA;
@@ -55,8 +58,21 @@ int main (int argc, char **argv)
 	prussdrv_pruintc_init(&pruss_intc_initdata);
 
 	/* Map PRU data ram memory */
+	prussdrv_map_prumem(PRUSS0_PRU0_DATARAM, &pru0DataMemory);
+	pru0DataMemory_int = (unsigned int *) pru0DataMemory;
+
 	prussdrv_map_prumem(PRUSS0_PRU1_DATARAM, &pru1DataMemory);
 	pru1DataMemory_int = (unsigned int *) pru1DataMemory;
+
+	/* Load default settings and write to PRU memory */
+	mysql_query(conn, "SELECT addr, value FROM parameters");
+	result = mysql_store_result(conn);
+	while ((row = mysql_fetch_row(result))){
+		mem_offset = atoi(row[0]);
+		mem_value = atoi(row[1]);
+		*(pru0DataMemory_int + mem_offset) = mem_value;
+	}
+	mysql_free_result(result);	
 
 	/* Load and execute binary on PRU */
 	prussdrv_exec_program (PRU_1, "./pru.bin");

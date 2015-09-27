@@ -7,6 +7,7 @@ To use this software, you will need to load a device tree overlay (.dtbo) to all
 
 To compile the sofware, ensure you have all the correct compilers (gcc, pasm). These are present by default on the Beaglebone Black Rev C. You can then run `make` in the appropriate folders, once for the C program and once for the PRU assembly program. The executable will be in the bin folder.
         
+## Register assignment
 | REGISTER      |                   USE                 |
 | :------------ | :------------------------------------ |
 | r0            | RESERVED                              |
@@ -46,3 +47,21 @@ To compile the sofware, ensure you have all the correct compilers (gcc, pasm). T
 | c29           |                                       |
 | c30           |                                       |
 | c31           |                                       |
+
+## PRU memory assignment
+| ADDR		| name		|
+| :------------ | :------------ |
+| 0x0		| RUN		|
+| 0x4		| OPENCLOSE	|
+| 0x8		| XLOCK		|
+| 0xC		| YLOCK		|
+| 0x10		| TIMEXY	|
+| 0x20		| ADC_CLKDIV	|
+| 0x24		| ADC_AVERAGE	|
+| 0x28		| OPENDELAY	|
+| 0x2C		| CLOSEDELAY	|
+| 0x30		| SPI_CH1CONF	|
+| 0x40		| PGAIN		|
+| 0x44		| IGAIN		|
+| 0x48		| DGAIN		|
+| 0x4C		| IRESET	|
