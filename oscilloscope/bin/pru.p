@@ -46,11 +46,15 @@
     INIT_PARAMETERS:
       LBCO r2, c25, OPENCLOSE, 4        // r4.w2 is booleans, description below
       OR r4.w2, r4.w2, r2.w0            // bit[16]: OPEN / CLOSED LOOP         
+
       LBCO r2, c25, LOCKSLOPE, 4
       LSL r2, r2, 1
       OR r4.w2, r4.w2, r2.w0            // bit[17]: LOCK SLOPE
                                         // bit[18]: OPEN SCAN UP / DOWN         (default:DOWN)
-      LBCO r10, c25, OPENAMPL, 4        // load open loop ramp amplitude
+
+      LBCO r10, c25, OPENAMPL, 2        // load open loop ramp amplitude
+        MOV r2, 0x7fff                  // ensure maximum amplitude not exceeded
+        AND r10, r10, r2                
       LBCO r11.w2, c25, XLOCK, 2        // load PID controller DAC set point (for scan to)
       LBCO r11.w0, c25, YLOCK, 2        // load PID controller set point
       LBCO r12, c25, PGAIN, 4           // load PGAIN
@@ -60,7 +64,7 @@
       MOV r7, 0x8000                    // Start DAC at centre of range
 
     #include "setup_spi.p"              // setup SPI for data out to DAC
-    #include "setup_adc.p"              // ADC definition, setup and start ADC
+    #include "setup_adc.p"              // ADC definitions, setup and start ADC
 
 /* READ ADC AND PACK DATA */
     WAIT:
@@ -76,27 +80,39 @@
       OR r6, r6, r9                     // pack as: time->bits[31:12], adc->bits[11:0]
 
 /* OPEN LOOP */
-      QBBC CLOSEDLOOP, r4.t16           // do close loop if bit clear
+      QBBC CLOSEDLOOP, r4.t16           // do closed loop if bit[16] clear
     OPENLOOP:
-      QBBC SCANDOWN, r4.t18             // scan down instead
       MOV r2, 0x8000                    // to test whether amplitude reached below
+      QBBC SCANDOWN, r4.t18             // scan down instead
+
       SCANUP:
         ADD r7, r7, 1                   // increase DAC output
         ADD r2, r2, r10.w0              // test whether upper amplitude reached 
-        QBLT ENDLOOP, r7, r2
+        QBGT ENDLOOP, r7, r2
         CLR r4.t18                      // change direction
+        QBA ENDLOOP
+
       SCANDOWN:
         SUB r7, r7, 1
         SUB r2, r2, r10.w0              // test whether lower amplitude reached
         QBGT ENDLOOP, r7, r2
         SET r4.t18                      // change direction
-      QBA ENDLOOP 
+        QBA ENDLOOP
 
 /* CLOSED LOOP */
     CLOSEDLOOP:
 
     ENDLOOP:
-        // here store out the value to DAC
+        
+      SPI_CHECK:                        // Check transmitter register status
+        LBBO r2, r22, SPI_CH1STAT, 4
+        QBBC SPI_END, r2.t1             // skip if still transmitting previous data
+
+      SPI_BUILDWORD:                    // prepare data for sending to DAC
+
+      SPI_SEND:
+        SBBO r7, r22, SPI_TX1, 4        // word to transmit 
+      SPI_END:
 
 /* HANDLE STORING DATA TO MEMORY */
     WRITEDATA:
