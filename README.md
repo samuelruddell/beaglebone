@@ -60,6 +60,7 @@ To compile the sofware, ensure you have all the correct compilers (gcc, pasm). T
 | 0x28		| OPENDELAY	|
 | 0x2C		| CLOSEDELAY	|
 | 0x30		| SPI_CH1CONF	|
+| 0x34		| OPENAMPL      |
 | 0x40		| PGAIN		|
 | 0x44		| IGAIN		|
 | 0x48		| DGAIN		|

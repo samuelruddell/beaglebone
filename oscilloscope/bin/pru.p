@@ -95,7 +95,7 @@
       SCANDOWN:
         SUB r7, r7, 1
         SUB r2, r2, r10.w0              // test whether lower amplitude reached
-        QBGT ENDLOOP, r7, r2
+        QBLT ENDLOOP, r7, r2
         SET r4.t18                      // change direction
         QBA ENDLOOP
 
@@ -104,11 +104,11 @@
 
     ENDLOOP:
         
+      SPI_BUILDWORD:                    // prepare data for sending to DAC
+
       SPI_CHECK:                        // Check transmitter register status
         LBBO r2, r22, SPI_CH1STAT, 4
         QBBC SPI_END, r2.t1             // skip if still transmitting previous data
-
-      SPI_BUILDWORD:                    // prepare data for sending to DAC
 
       SPI_SEND:
         SBBO r7, r22, SPI_TX1, 4        // word to transmit 
