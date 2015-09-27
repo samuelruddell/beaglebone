@@ -15,11 +15,14 @@ ADC_INIT:
   SBBO r2, r20, CTRL, 4		// Store configuration to ADC_CTRL register
 
   // edit CLKDIV register
-  MOV r2, 0x0			// ADC clock divisor = 1
+  LBCO r2, c25, 0x20, 4		// ADC clock divisor = 1
   SBBO r2, r20, CLKDIV, 4 	// for fastest possible readings (1.6MHz)
 
   // Step configuration 1
-  MOV r2, 0x1			// ADC SW enabled, continuous, no averaging
+  // Averaging bits[4:2], possibility of 0,2,4,8,16 sample averages
+  LBCO r2, c25, 0x24, 4
+  LSL r2, r2, 2                 // bits[4:2]
+  OR r2, r2, 0x1      	        // ADC SW enabled, continuous, averaging as defined
   SBBO r2, r20, STEPCONFIG1, 4	// Store configuration to ADC_STEPCONFIG1 register
 
   // enable ADC STEPCONFIG 1
