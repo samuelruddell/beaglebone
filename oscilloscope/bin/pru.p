@@ -43,24 +43,7 @@
       SET r5, 3                         // set bit 3 to enable CYCLE
       SBCO r5, c28, 0, 4                // store CYCLE settings
 
-    INIT_PARAMETERS:
-      LBCO r2, c25, OPENCLOSE, 4        // r4.w2 is booleans, description below
-      OR r4.w2, r4.w2, r2.w0            // bit[16]: OPEN / CLOSED LOOP         
-
-      LBCO r2, c25, LOCKSLOPE, 4
-      LSL r2, r2, 1
-      OR r4.w2, r4.w2, r2.w0            // bit[17]: LOCK SLOPE
-                                        // bit[18]: OPEN SCAN UP / DOWN         (default:DOWN)
-
-      LBCO r10, c25, OPENAMPL, 2        // load open loop ramp amplitude
-        MOV r2, 0x7fff                  // ensure maximum amplitude not exceeded
-        AND r10, r10, r2                
-      LBCO r11.w2, c25, XLOCK, 2        // load PID controller DAC set point (for scan to)
-      LBCO r11.w0, c25, YLOCK, 2        // load PID controller set point
-      LBCO r12, c25, PGAIN, 4           // load PGAIN
-      LBCO r13, c25, IGAIN, 4           // load IGAIN
-      LBCO r14, c25, DGAIN, 4           // load DGAIN
-
+      JAL r23.w0, LOAD_PARAMETERS       // load parameters from memory subroutine
       MOV r7, 0x8000                    // Start DAC at centre of range
 
     #include "setup_spi.p"              // setup SPI for data out to DAC
@@ -102,8 +85,8 @@
 /* CLOSED LOOP */
     CLOSEDLOOP:
 
+/* SPI SEND DATA TO DAC */
     ENDLOOP:
-        
       SPI_BUILDWORD:                    // prepare data for sending to DAC
 
       SPI_CHECK:                        // Check transmitter register status
@@ -131,6 +114,9 @@
       MOV r2, 1<<18                     // write 1 to clear event
       MOV r1, SECR0                     // System Event Status Enable/Clear register
       SBCO r2, C0, r1, 4                // C0 is interrupt controller
+      QBA INT_CHECK
+
+    LOAD_DATA:
     
     INT_CHECK:
       QBNE WAIT, r3.w0, r4.w0           // check number of samples taken
@@ -154,3 +140,27 @@
     
     QUIT:
       HALT
+
+/* SUBROUTINES UTILISING JAL */
+
+    LOAD_PARAMETERS:
+      LBCO r2, c25, OPENCLOSE, 4        // r4.w2 is booleans, description below
+      AND r2, r2, 0x1                   // ensure bit[0] only (bool)
+      OR r4.w2, r4.w2, r2.w0            // bit[16]: OPEN / CLOSED LOOP         
+
+      LBCO r2, c25, LOCKSLOPE, 4
+      AND r2, r2, 0x1                   // ensure bit[0] only (bool)
+      LSL r2, r2, 1                     // logical shift left
+      OR r4.w2, r4.w2, r2.w0            // bit[17]: LOCK SLOPE
+                                        // bit[18]: OPEN SCAN UP / DOWN         (default:DOWN)
+
+      LBCO r10, c25, OPENAMPL, 2        // load open loop ramp amplitude
+        MOV r2, 0x7fff                  // ensure maximum amplitude not exceeded
+        AND r10, r10, r2                
+      LBCO r11.w2, c25, XLOCK, 2        // load PID controller DAC set point (for scan to)
+      LBCO r11.w0, c25, YLOCK, 2        // load PID controller set point
+      LBCO r12, c25, PGAIN, 4           // load PGAIN
+      LBCO r13, c25, IGAIN, 4           // load IGAIN
+      LBCO r14, c25, DGAIN, 4           // load DGAIN
+      
+      JMP r23.w0                        // RETURN

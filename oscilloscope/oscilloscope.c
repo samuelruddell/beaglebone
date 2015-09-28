@@ -31,7 +31,7 @@ int main (int argc, char **argv)
 	MYSQL_RES *result;
 	MYSQL_ROW row;
 
-	unsigned int runScope;
+	unsigned int runScope = 1;
 
 	/* connect to database */
 	conn = mysqlConnect();
@@ -78,26 +78,14 @@ int main (int argc, char **argv)
 	prussdrv_exec_program (PRU_1, "./pru.bin");
 
 	while(1) {
-
-		// check database for RUN
-		mysql_query(conn, "SELECT value FROM parameters WHERE name = 'RUN' LIMIT 1");
-		result = mysql_store_result(conn);
-		row = mysql_fetch_row(result);
-
-		// check whether RUN == "1"
-		if(!strncmp(row[0], "1", 1)){
-			runScope = 1;
-		} else {
-			runScope = 0;
-		}
-		mysql_free_result(result);
-
 		/* run oscilloscope */
 		if(runScope){
 
 			/* send interrupt to PRU and wait for EVTOUT */
 			// event 17 maps to r31.t31, event 18 maps to r31.t30
-			prussdrv_pru_send_wait_clear_event  ( 18, PRU_EVTOUT_0, 18);
+			prussdrv_pru_send_event (18); 
+			prussdrv_pru_wait_event ( PRU_EVTOUT_0 ); 
+			//	prussdrv_pru_send_wait_clear_event  ( 18, PRU_EVTOUT_0, 18);
 			prussdrv_pru_clear_event (PRU_EVTOUT_0, PRU1_ARM_INTERRUPT);
 
 			/* Read PRU memory and store in MySQL database */
@@ -124,9 +112,24 @@ int main (int argc, char **argv)
 				mysqlError(conn);
 			}
 
-			/* sleep for performance reasons */
-			sleep(0.5);
 		}
+
+		/* sleep for performance reasons */
+		sleep(0.5);
+
+		/* Load settings and write to PRU memory */
+		mysql_query(conn, "SELECT addr, value FROM parameters");
+		result = mysql_store_result(conn);
+		while ((row = mysql_fetch_row(result))){
+			mem_offset = atoi(row[0]);
+			mem_value = atoi(row[1]);
+			*(pru0DataMemory_int + mem_offset) = mem_value;
+			// check status of RUN
+			if(mem_offset==0){
+				runScope = mem_value;			// set runScope to value of RUN
+			}
+		}
+		mysql_free_result(result);
 	}
 
 	/* Disable PRU and close memory mappings */

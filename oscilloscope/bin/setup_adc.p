@@ -15,8 +15,8 @@ ADC_INIT:
   SBBO r2, r20, CTRL, 4         // Store configuration to ADC_CTRL register
 
   // edit CLKDIV register
-  LBCO r2, c25, 0x20, 4         // ADC clock divisor = 1
-  SBBO r2, r20, CLKDIV, 4       // for fastest possible readings (1.6MHz)
+  LBCO r2, c25, 0x20, 4         // Load in ADC CLKDIV setting from memory
+  SBBO r2, r20, CLKDIV, 4       // set to 0 for fastest possible adc readings (1.6MHz)
 
   // Step configuration 1
   LBCO r2, c25, 0x24, 4         // possibility of 0,2,4,8,16 sample averages

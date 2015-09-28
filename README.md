@@ -32,8 +32,8 @@ To compile the sofware, ensure you have all the correct compilers (gcc, pasm). T
 | r19           |                                       |
 | r20           | ADC_                                  |
 | r21           | ADC_FIFO0                             |
-| r22           | MCSPI_TX1                             |
-| r23           | MCSPI_CH1STAT                         |
+| r22           | MCSPI1_                               |
+| r23           | w0: JAL REGISTER                      |
 | r24           |                                       |
 | r25           | MAC SETTINGS                          |
 | r26           | MAC UPPER PRODUCT                     |
