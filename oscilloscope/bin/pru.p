@@ -89,7 +89,7 @@
       QBA INT_CHECK                     // if writing enabled, no need for ARM interrupt check
     
     ARM_INTERRUPT:                 
-      QBBC INT_CHECK, r31.t30           // skip this if no interrupt
+      QBBC LOAD_DATA, r31.t30           // skip this if no interrupt
       MOV r3.w2, 1                      // enable writing
       SET r5, 3                         // set bit 3 to enable CYCLE timer
       SBCO r5, c28, 0, 4                // store CYCLE settings 
@@ -101,7 +101,9 @@
       QBA INT_CHECK
 
     LOAD_DATA:
-    
+      JAL r23.w0, LOAD_PARAMETERS       // load parameters
+      JAL r23.w0, SETUP_ADC             // setup ADC subroutine 
+
     INT_CHECK:
       QBNE WAIT, r3.w0, r4.w0           // check number of samples taken
     
