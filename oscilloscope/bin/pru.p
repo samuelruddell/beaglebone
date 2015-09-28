@@ -3,24 +3,8 @@
 
 .origin 0
 
-#define PRU_INTERRUPT           32
-#define PRU_EVTOUT_0            3
-
-#define CTBIR0                  0x20    // Constant Table Block Index Register 0
-#define CTPPR0                  0x24028 // Constant Table Programmable Pointer 0
-#define SECR0                   0x280
-
-#define CYCLE                   0xc     // CYCLE register
-
-#define OPENCLOSE               0x4     // OPEN or CLOSED LOOP
-#define XLOCK                   0x8     // DAC lock point (for scan to)
-#define YLOCK                   0xc     // PID set point
-#define OPENAMPL                0x34    // open loop ramp amplitude memory offset
-#define PGAIN                   0x40
-#define IGAIN                   0x44
-#define DGAIN                   0x48
-#define IRESET                  0x4c    // reset integrator
-#define LOCKSLOPE               0x50    // slope
+/* DEFINITIONS */
+#include "pru.hp"
 
 /* PERIPHERAL INITIALIZATION */
     INIT:
@@ -46,8 +30,8 @@
       JAL r23.w0, LOAD_PARAMETERS       // load parameters from memory subroutine
       MOV r7, 0x8000                    // Start DAC at centre of range
 
-    #include "setup_spi.p"              // setup SPI for data out to DAC
-    #include "setup_adc.p"              // ADC definitions, setup and start ADC
+      JAL r23.w0, SETUP_SPI             // setup SPI subroutine  
+      JAL r23.w0, SETUP_ADC             // setup ADC subroutine 
 
 /* READ ADC AND PACK DATA */
     WAIT:
@@ -164,3 +148,11 @@
       LBCO r14, c25, DGAIN, 4           // load DGAIN
       
       JMP r23.w0                        // RETURN
+
+    SETUP_SPI:
+      #include "setup_spi.p"              // setup SPI for data out to DAC
+      JMP r23.w0
+
+    SETUP_ADC:
+      #include "setup_adc.p"              // ADC definitions, setup and start ADC
+      JMP r23.w0

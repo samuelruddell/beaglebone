@@ -1,12 +1,4 @@
-#define ADC_                    0x44e0d000
-#define CTRL                    0x040
-#define CLKDIV                  0x04c
-#define STEPENABLE              0x054
-#define STEPCONFIG1             0x064
-#define STEPDELAY1              0x068
-#define FIFOCOUNT               0x0e4
-#define FIFO                    0x100
-
+/* setup for ADC module */
   MOV r20, ADC_                 // ADC address
   MOV r21, ADC_ | FIFO          // FIFO0 address
 ADC_INIT:

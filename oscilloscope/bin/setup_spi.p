@@ -1,20 +1,4 @@
 /* setup for SPI module */
-
-#define CM_PER_                 0x44e00000  // clock module peripheral
-#define SPI0_CLKCTRL            0x4c
-#define SPI1_CLKCTRL            0x50
-
-#define MCSPI0_                 0x48030100
-#define MCSPI1_                 0x481a0100
-#define SPI_SYSCONFIG           0x10
-#define SPI_SYSSTATUS           0x14
-#define SPI_IRQENABLE           0x1c
-#define SPI_MODULCTRL           0x28
-#define SPI_CH1CONF             0x40
-#define SPI_CH1STAT             0x44
-#define SPI_CH1CTRL             0x48
-#define SPI_TX1                 0x4c
-
 INIT_SPI:
     MOV r22, MCSPI1_            // MCSPI1 base address
 
@@ -65,7 +49,7 @@ SPI_RESET_CHECK:                // wait for reset to complete
             // bit[18]      Input select                    (data line 0)
             // bit[19]      TURBO                           (true)
             // bit[20]      FORCE                           (true)
-    OR r2, r2, 0000 << 2      // frequency division bits[5:2]
+    OR r2, r2, 0011 << 2      // frequency division bits[5:2]
     SBBO r2, r22, SPI_CH1CONF, 4
 
     // Enable channel 1
