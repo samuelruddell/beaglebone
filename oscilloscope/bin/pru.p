@@ -57,14 +57,16 @@
         ADD r2, r2, r10.w0              // test whether upper amplitude reached 
         QBGT ENDLOOP, r7, r2
         CLR r4.t18                      // change direction
-        QBA ENDLOOP
+        QBA ADC_PARS
 
       SCANDOWN:
         SUB r7, r7, 1
         SUB r2, r2, r10.w0              // test whether lower amplitude reached
         QBLT ENDLOOP, r7, r2
         SET r4.t18                      // change direction
-        QBA ENDLOOP
+
+      ADC_PARS:                         // LOAD new ADC parameters on open loop only
+        JAL r23.w0, SETUP_ADC           // setup ADC subroutine 
 
 /* CLOSED LOOP */
     CLOSEDLOOP:
