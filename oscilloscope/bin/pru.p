@@ -102,7 +102,7 @@
 
     LOAD_DATA:
       JAL r23.w0, LOAD_PARAMETERS       // load parameters
-      JAL r23.w0, SETUP_ADC             // setup ADC subroutine 
+      //JAL r23.w0, SETUP_ADC             // setup ADC subroutine 
 
     INT_CHECK:
       QBNE WAIT, r3.w0, r4.w0           // check number of samples taken
@@ -148,7 +148,6 @@
       LBCO r12, c25, PGAIN, 4           // load PGAIN
       LBCO r13, c25, IGAIN, 4           // load IGAIN
       LBCO r14, c25, DGAIN, 4           // load DGAIN
-      
       JMP r23.w0                        // RETURN
 
     SETUP_SPI:
