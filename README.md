@@ -22,22 +22,22 @@ To compile the sofware, ensure you have all the correct compilers (gcc, pasm). T
 | r9            | ADC                                   |
 | r10           | OPEN LOOP AMPLITUDE                   |
 | r11           | PID SET POINT                         |
-| r12           | PGAIN RESULT << 16 \| PGAIN           |
-| r13           | IGAIN RESULT << 16 \| IGAIN           |
-| r14           | IGAIN CALC REGISTER                   |
-| r15           | DGAIN RESULT << 16 \| DGAIN           |
-| r16           | DGAIN CALC REGISTER                   |
-| r17           |                                       |
-| r18           |                                       |
-| r19           |                                       |
+| r12           | PGAIN                                 |
+| r13           | IGAIN                                 |
+| r14           | DGAIN                                 | 
+| r15           | P_RESULT                              |
+| r16           | I_RESULT                              |
+| r17           | D_RESULT                              |
+| r18           | PREVIOUS ERROR SIGNAL                 |
+| r19           | ERROR SIGNAL                          |
 | r20           | ADC_                                  |
 | r21           | ADC_FIFO0                             |
 | r22           | MCSPI1_                               |
 | r23           | w0: JAL REGISTER                      |
 | r24           |                                       |
 | r25           | MAC SETTINGS                          |
-| r26           | MAC UPPER PRODUCT                     |
-| r27           | MAC LOWER PRODUCT                     |
+| r26           | MAC LOWER PRODUCT                     |
+| r27           | MAC UPPER PRODUCT                     |
 | r28           | MAC OPERAND 1                         |
 | r29           | MAC OPERAND 2                         |
 | r30           | REALTIME OUT                          |

@@ -27,6 +27,10 @@
       SET r5, 3                         // set bit 3 to enable CYCLE
       SBCO r5, c28, 0, 4                // store CYCLE settings
 
+      XIN 0, r25, 1                     // load in MAC settings (multiply accumulate)
+      CLR r25.t0                        // set up multiply-only mode
+      XOUT 0, r25, 1                    // store MAC_mode to MAC
+
       JAL r23.w0, LOAD_PARAMETERS       // load parameters from memory subroutine
       MOV r7, 0x8000                    // Start DAC at centre of range
 
@@ -47,7 +51,6 @@
       OR r6, r6, r9                     // pack as: time->bits[31:12], adc->bits[11:0]
 
 /* OPEN LOOP */
-// need to change logic to handle amplitude of 0
       QBBC CLOSEDLOOP, r4.t16           // do closed loop if bit[16] clear
     OPENLOOP:
       MOV r2, 0x8000                    // used to test whether amplitude reached below
@@ -70,9 +73,46 @@
 
       LOAD_ADC_PARAMETERS:              // LOAD new ADC parameters on open loop only
         JAL r23.w0, SETUP_ADC           // setup ADC subroutine 
+        QBA ENDLOOP
+
+/* SEMI-CLOSED LOOP */
+      // The point of this is to scan DAC to XLOCK before enabling closed loop 
+      // set a default value of PREVIOUS_ERROR_SIGNAL
 
 /* CLOSED LOOP */
     CLOSEDLOOP:
+        SUB r19, r9, r11                 // calculate error signal
+
+      PROPORTIONAL:
+        MOV r28, r19                    // error signal value to MAC as operand 1
+        MOV r29, r12                    // move PGAIN to MAC
+        XOUT 0, r28, 8                  // multiply
+        XIN 0, r26, 8                   // load in product to r26 and r27
+        MOV r15, r26                    // store lower product in r15
+
+      INTEGRAL:
+        QBBS INTEGRAL_RESET, r4.t18     // skip this if integrator reset active
+        MOV r29, r13                    // move IGAIN to MAC
+        XOUT 0, r28, 8                  // multiply
+        XIN 0, r26, 8                   // load in product to r26 and r27
+        ADD r15, r15, r26               // integrate lower product into r16
+        QBA DERIVATIVE
+
+        INTEGRAL_RESET:
+          MOV r16, 0x0                  // integrator reset
+
+      DERIVATIVE:
+        SUB r28, r19, r18               // calculate derivative
+        MOV r29, r14                    // move DGAIN to MAC
+        XOUT 0, r28, 8                  // multiply
+        XIN 0, r26, 8                   // load in product to r26 and r27
+        MOV r18, r19                    // error signal to previous error signal
+
+      COMBINE_PID:
+        ADD r7, r5, r16                 // ADD P_RESULT and I_RESULT
+        ADD r7, r7, r19                 // ADD D_RESULT
+        QBBS ENDLOOP, r4.t17            // skip below step if locking to positive slope 
+        RSB r7, r7, 0                   // Reverse Unsigned Integer Subtract r7 = 0 - r7
 
 /* SPI SEND DATA TO DAC */
     ENDLOOP:
@@ -86,7 +126,7 @@
         SBBO r7, r22, SPI_TX1, 4        // word to transmit 
       SPI_END:
 
-/* HANDLE STORING DATA TO MEMORY */
+/* STORING DATA TO MEMORY AND INTERRUPT IN HANDLING */
     WRITEDATA:
       QBEQ ARM_INTERRUPT, r3.w2, 0      // skip write if disabled
       SBCO r6, c24, r3.w0, 4            // store data in PRU_DATARAM_1, offset r3.w0
@@ -105,9 +145,9 @@
       SBCO r2, C0, r1, 4                // C0 is interrupt controller
       QBA INT_CHECK
 
+/* END OF LOOP AND INTERRUPT OUT HANDLING */
     LOAD_DATA:
       JAL r23.w0, LOAD_PARAMETERS       // load parameters
-      //JAL r23.w0, SETUP_ADC             // setup ADC subroutine 
 
     INT_CHECK:
       QBNE WAIT, r3.w0, r4.w0           // check number of samples taken
@@ -142,12 +182,16 @@
       LBCO r2, c25, LOCKSLOPE, 4
       AND r2, r2, 0x1                   // bitmask to ensure single bit only
       LSL r2, r2, 1                     // logical shift left
-      OR r4.w2, r4.w2, r2.w0            // bit[17]: LOCK SLOPE                  (0 = NEGATIVE SLOPE)
-                                        // bit[18]: OPEN SCAN UP / DOWN         (0 = DOWN)
+      OR r4.w2, r4.w2, r2.w0            // bit[17] - LOCK SLOPE                  (0 = NEGATIVE SLOPE)
+                                        // bit[18] - OPEN SCAN UP / DOWN         (0 = DOWN)
+      LBCO r2, c25, IRESET, 4
+      AND r2, r2, 0x1
+      LSL r2, r2, 3
+      OR r4.w2, r4.w2, r2.w0            // bit[19] - INTEGRAL RESET              (1 = RESET)
 
       LBCO r10, c25, OPENAMPL, 2        // load open loop ramp amplitude
-        MOV r2, 0x7fff                  // ensure maximum amplitude not exceeded
-        AND r10, r10, r2                
+      MOV r2, 0x7fff                    // ensure maximum amplitude not exceeded
+      AND r10, r10, r2                
       LBCO r11.w2, c25, XLOCK, 2        // load PID controller DAC set point (for scan to)
       LBCO r11.w0, c25, YLOCK, 2        // load PID controller set point
       LBCO r12, c25, PGAIN, 4           // load PGAIN
