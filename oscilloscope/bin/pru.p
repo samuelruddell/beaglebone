@@ -8,7 +8,6 @@
 
 /* PERIPHERAL INITIALIZATION */
     INIT:
-      // enable OCP master ports
       LBCO r2, c4, 4, 4                 // SYSCFG register
       CLR r2, r0, 4                     // enable OCP master ports
       SBCO r2, c4, 4, 4                 // store SYSCFG settings
@@ -46,8 +45,13 @@
       LBCO r8, c28, CYCLE, 4            // load in CYCLE COUNT
       LBBO r9, r21, 0, 4                // load 4 bytes from FIFO into r9
     
-    PACK:                               // pack data into 32 bit register
+    QBBS PACK_XY, r4.t20                // TIME or XY mode for oscilloscope 
+    PACK_TIME:                          // pack time data into 32 bit register
       LSL r6, r8, 12                    // use bits[31:12] for time, store in r6
+      QBA PACK_END
+    PACK_XY:
+      LSL r6, r7, 12                    // pack X data into 32 bit register
+    PACK_END:
       OR r6, r6, r9                     // pack as: time->bits[31:12], adc->bits[11:0]
 
 /* OPEN LOOP */
@@ -69,6 +73,7 @@
         QBA ENDLOOP        
 
       TOGGLE_DIRECTION:
+        MOV r7, r2                      // MOV min/max amplitude to DAC output
         XOR r4.w2, r4.w2, 1<<2          // TOGGLE scan UP/DOWN
 
       LOAD_ADC_PARAMETERS:              // LOAD new ADC parameters on open loop only
@@ -109,10 +114,12 @@
         MOV r18, r19                    // error signal to previous error signal
 
       COMBINE_PID:
-        ADD r7, r5, r16                 // ADD P_RESULT and I_RESULT
-        ADD r7, r7, r19                 // ADD D_RESULT
-        QBBS ENDLOOP, r4.t17            // skip below step if locking to positive slope 
-        RSB r7, r7, 0                   // Reverse Unsigned Integer Subtract r7 = 0 - r7
+        ADD r2, r15, r16                // ADD P_RESULT and I_RESULT
+        ADD r2, r2, r17                 // ADD D_RESULT
+        QBBS CLOSED_LOOP_OUT, r4.t17      // skip below step if locking to positive slope 
+        RSB r2, r2, 0                   // Reverse Unsigned Integer Subtract r7 = 0 - r7
+        CLOSED_LOOP_OUT:
+          ADD r7, r7, r2                // ADD PID result to DAC output
 
 /* SPI SEND DATA TO DAC */
     ENDLOOP:
@@ -188,6 +195,11 @@
       AND r2, r2, 0x1
       LSL r2, r2, 3
       OR r4.w2, r4.w2, r2.w0            // bit[19] - INTEGRAL RESET              (1 = RESET)
+
+      LBCO r2, c25, TIME_XY, 4
+      AND r2, r2, 0x1
+      LSL r2, r2, 4
+      OR r4.w2, r4.w2, r2.w0            // bit[20] - TIME or XY mode             (0 = TIME)
 
       LBCO r10, c25, OPENAMPL, 2        // load open loop ramp amplitude
       MOV r2, 0x7fff                    // ensure maximum amplitude not exceeded

@@ -14,6 +14,7 @@
 #define OPENCLOSE               0x4     // OPEN or CLOSED LOOP
 #define XLOCK                   0x8     // DAC lock point (for scan to)
 #define YLOCK                   0xc     // PID set point
+#define TIME_XY                 0x10    // TIME or XY mode for oscilloscope
 #define OPENAMPL                0x34    // open loop ramp amplitude memory offset
 #define PGAIN                   0x40
 #define IGAIN                   0x44
