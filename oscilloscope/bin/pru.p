@@ -47,25 +47,28 @@
       OR r6, r6, r9                     // pack as: time->bits[31:12], adc->bits[11:0]
 
 /* OPEN LOOP */
+// need to change logic to handle amplitude of 0
       QBBC CLOSEDLOOP, r4.t16           // do closed loop if bit[16] clear
     OPENLOOP:
-      MOV r2, 0x8000                    // to test whether amplitude reached below
+      MOV r2, 0x8000                    // used to test whether amplitude reached below
       QBBC SCANDOWN, r4.t18             // scan down instead
 
       SCANUP:
-        ADD r7, r7, 1                   // increase DAC output
         ADD r2, r2, r10.w0              // test whether upper amplitude reached 
-        QBGT ENDLOOP, r7, r2
-        CLR r4.t18                      // change direction
-        QBA ADC_PARS
+        QBLE TOGGLE_DIRECTION, r7, r2   // toggle direction if upper amplitude reached
+        ADD r7, r7, 1                   // increase DAC output
+        QBA ENDLOOP        
 
       SCANDOWN:
-        SUB r7, r7, 1
         SUB r2, r2, r10.w0              // test whether lower amplitude reached
-        QBLT ENDLOOP, r7, r2
-        SET r4.t18                      // change direction
+        QBGE TOGGLE_DIRECTION, r7, r2   // toggle direction if lower amplitude reached
+        SUB r7, r7, 1                   // decrease DAC output
+        QBA ENDLOOP        
 
-      ADC_PARS:                         // LOAD new ADC parameters on open loop only
+      TOGGLE_DIRECTION:
+        XOR r4.w2, r4.w2, 1<<2          // TOGGLE scan UP/DOWN
+
+      LOAD_ADC_PARAMETERS:              // LOAD new ADC parameters on open loop only
         JAL r23.w0, SETUP_ADC           // setup ADC subroutine 
 
 /* CLOSED LOOP */
@@ -134,13 +137,13 @@
     LOAD_PARAMETERS:
       LBCO r2, c25, OPENCLOSE, 4        // r4.w2 is booleans, description below
       AND r2, r2, 0x1                   // ensure bit[0] only (bool)
-      OR r4.w2, r4.w2, r2.w0            // bit[16]: OPEN / CLOSED LOOP         
+      OR r4.w2, r4.w2, r2.w0            // bit[16]: OPEN / CLOSED LOOP          (0 = CLOSED LOOP) 
 
       LBCO r2, c25, LOCKSLOPE, 4
-      AND r2, r2, 0x1                   // ensure bit[0] only (bool)
+      AND r2, r2, 0x1                   // bitmask to ensure single bit only
       LSL r2, r2, 1                     // logical shift left
-      OR r4.w2, r4.w2, r2.w0            // bit[17]: LOCK SLOPE
-                                        // bit[18]: OPEN SCAN UP / DOWN         (default:DOWN)
+      OR r4.w2, r4.w2, r2.w0            // bit[17]: LOCK SLOPE                  (0 = NEGATIVE SLOPE)
+                                        // bit[18]: OPEN SCAN UP / DOWN         (0 = DOWN)
 
       LBCO r10, c25, OPENAMPL, 2        // load open loop ramp amplitude
         MOV r2, 0x7fff                  // ensure maximum amplitude not exceeded
@@ -153,9 +156,9 @@
       JMP r23.w0                        // RETURN
 
     SETUP_SPI:
-      #include "setup_spi.p"              // setup SPI for data out to DAC
+      #include "setup_spi.p"            // setup SPI for data out to DAC
       JMP r23.w0
 
     SETUP_ADC:
-      #include "setup_adc.p"              // ADC definitions, setup and start ADC
+      #include "setup_adc.p"            // ADC definitions, setup and start ADC
       JMP r23.w0

@@ -6,18 +6,17 @@ ADC_SETUP:
   MOV r2, 0x4                   // Make step configuration registers writable, disable TSC_ADC_SS
   SBBO r2, r20, CTRL, 4         // Store configuration to ADC_CTRL register
 
-  // ensure ADC is disabled
-ADC_CHECK:
+ADC_CHECK:                      // ensure ADC is disabled
   LBBO r2, r20, ADCSTAT, 4      // Load in ADC status
   AND r2, r2, 0x1f              // bitmask for step_id status  
   QBNE ADC_CHECK, r2, 0x10      // wait until ADC idling before editing step registers
 
 FIFO_EMPTY:
   LBBO r2, r20, FIFOCOUNT, 4    // check for words in FIFO0
-  QBEQ FIFO_EMPTIED, r2, 0      // WAIT until word present in FIFO0
+  QBEQ FIFO_IS_EMPTY, r2, 0     // skip if FIFO is already empty
   LBBO r9, r21, 0, 4            // load 4 bytes from FIFO into r9
-  QBLE FIFO_EMPTY, r2, 2        // JUMP if FIFOCOUNT >= 2            
-FIFO_EMPTIED:
+  QBLE FIFO_EMPTY, r2, 2        // repeat loop if r2 >= 2 (i.e. repeat if FIFO not empty)
+  FIFO_IS_EMPTY:
 
   // edit CLKDIV register
   LBCO r2, c25, 0x20, 4         // Load in ADC CLKDIV setting from memory
@@ -32,8 +31,8 @@ FIFO_EMPTIED:
 
   // Step delay configuration 1
   LBCO r2, c25, 0x28, 4         // number of ADC clock cycles to wait after applying STEPCONFIG1 
-  MOV r1, 0x3ffff               // bitmask
-  AND r2, r2, r1
+  MOV r1, 0x3ffff               // bitmask for bits[17:0]
+  AND r2, r2, r1                // apply bitmask
   SBBO r2, r20, STEPDELAY1, 4   // bits[17:0]
 
   // enable ADC STEPCONFIG 1
@@ -41,5 +40,5 @@ FIFO_EMPTIED:
   SBBO r2, r20, STEPENABLE, 4   // Store configuration to ADC_STEPENABLE register
 
   // enable ADC reading
-  MOV r2, 0x1                   // step configuration registers read only, enable TSC_ADC_SS
+  MOV r2, 0x1                   // make step configuration registers read only, enable TSC_ADC_SS
   SBBO r2, r20, CTRL, 4         // enable ADC to start oscilloscope
