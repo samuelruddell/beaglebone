@@ -182,6 +182,8 @@
 /* SUBROUTINES UTILISING JAL */
 
     LOAD_PARAMETERS:
+      AND r4.w2, r4.w2, 0b100                  // clear all bits to be changed, so that OR works
+
       LBCO r2, c25, OPENCLOSE, 4        // r4.w2 is booleans, description below
       AND r2, r2, 0x1                   // ensure bit[0] only (bool)
       OR r4.w2, r4.w2, r2.w0            // bit[16]: OPEN / CLOSED LOOP          (0 = CLOSED LOOP) 
