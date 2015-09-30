@@ -9,7 +9,7 @@
 /* PERIPHERAL INITIALIZATION */
     INIT:
       LBCO r2, c4, 4, 4                 // SYSCFG register
-      CLR r2, r0, 4                     // enable OCP master ports
+      CLR r2, r2, 4                     // enable OCP master ports
       SBCO r2, c4, 4, 4                 // store SYSCFG settings
     
       MOV r1, CTPPR0                    // Constant Table Programmable Pointer
@@ -96,7 +96,7 @@
         MOV r15, r26                    // store lower product in r15
 
       INTEGRAL:
-        QBBS INTEGRAL_RESET, r4.t18     // skip this if integrator reset active
+        QBBS INTEGRAL_RESET, r4.t19     // skip this if integrator reset active
         MOV r29, r13                    // move IGAIN to MAC
         XOUT 0, r28, 8                  // multiply
         XIN 0, r26, 8                   // load in product to r26 and r27
@@ -140,7 +140,7 @@
       ADD r3.w0, r3.w0, 4               // increment counter
       QBA INT_CHECK                     // if writing enabled, no need for ARM interrupt check
     
-    ARM_INTERRUPT:                 
+    ARM_INTERRUPT:
       QBBC LOAD_DATA, r31.t30           // skip this if no interrupt
       MOV r3.w2, 1                      // enable writing
       SET r5, 3                         // set bit 3 to enable CYCLE timer

@@ -15,7 +15,8 @@ FIFO_EMPTY:
   LBBO r2, r20, FIFOCOUNT, 4    // check for words in FIFO0
   QBEQ FIFO_IS_EMPTY, r2, 0     // skip if FIFO is already empty
   LBBO r9, r21, 0, 4            // load 4 bytes from FIFO into r9
-  QBLE FIFO_EMPTY, r2, 2        // repeat loop if r2 >= 2 (i.e. repeat if FIFO not empty)
+  //QBLE FIFO_EMPTY, r2, 2        // repeat loop if r2 >= 2 (i.e. repeat if FIFO not empty)
+  QBA FIFO_EMPTY
   FIFO_IS_EMPTY:
 
   // edit CLKDIV register
@@ -23,7 +24,8 @@ FIFO_EMPTY:
   SBBO r2, r20, CLKDIV, 4       // set to 0 for fastest possible adc readings (1.6MHz)
 
   // Step configuration 1
-  LBCO r2, c25, 0x24, 4         // possibility of 0,2,4,8,16 sample averages
+  LBCO r2, c25, 0x24, 4         // load averaging from PRU memory
+                                // possibility of 0,2,4,8,16 sample averages
   AND r2, r2, 0x7               // bitmask
   LSL r2, r2, 2                 // bits[4:2] define averaging
   OR r2, r2, 0x1                // ADC SW enabled, continuous, averaging as defined
