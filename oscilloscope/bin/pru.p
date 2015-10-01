@@ -55,7 +55,7 @@
       OR r6, r6, r9                     // pack as: time->bits[31:12], adc->bits[11:0]
 
 /* OPEN LOOP */
-      QBBC CLOSEDLOOP, r4.t16           // do closed loop if bit[16] clear
+      QBBC SEMICLOSEDLOOP, r4.t16       // do semi-closed / closed loop if bit[16] clear
     OPENLOOP:
       MOV r2, 0x8000                    // used to test whether amplitude reached below
       QBBC SCANDOWN, r4.t18             // scan down instead
@@ -78,11 +78,27 @@
 
       LOAD_ADC_PARAMETERS:              // LOAD new ADC parameters on open loop only
         JAL r23.w0, SETUP_ADC           // setup ADC subroutine 
+        QBBS ENDLOOP, r4.t21            // JUMP if semiclosed loop primed already
+        SET r4.t21                      // otherwise prime semiclosed loop
         QBA ENDLOOP
 
 /* SEMI-CLOSED LOOP */
-      // The point of this is to scan DAC to XLOCK before enabling closed loop 
-      // set a default value of PREVIOUS_ERROR_SIGNAL
+      SEMICLOSEDLOOP:                   // Scan DAC to XLOCK before enabling closed loop 
+        QBBC CLOSEDLOOP, r4.t21         // no SEMI-CLOSED LOOP
+        QBLT SEMI_SCANDOWN, r7.w0, r11.w2        
+
+        SEMI_SCANUP:
+          ADD r7, r7, 1
+          QBA SEMI_TRANSITION
+
+        SEMI_SCANDOWN:
+          SUB r7, r7, 1
+
+        SEMI_TRANSITION:
+        QBNE ENDLOOP, r11.w2, r7.w0     // continue semi-closed loop if values not equal
+                                        // otherwise transition to closed loop
+        SUB r18, r9, r11.w0             // set initial value for previous error signal
+        CLR r4.t21                      // unprime semi-closed loop
 
 /* CLOSED LOOP */
     CLOSEDLOOP:
@@ -204,7 +220,7 @@
 /* SUBROUTINES UTILISING JAL */
 
     LOAD_PARAMETERS:
-      AND r4.w2, r4.w2, 0b100           // clear all bits to be changed, so that OR works
+      AND r4.w2, r4.w2, 0b100100        // clear all bits to be changed, so that OR works
 
       LBCO r2, c25, OPENCLOSE, 4        // r4.w2 is booleans, description below
       AND r2, r2, 0x1                   // bitmask to ensure bit[0] only (bool)
@@ -224,6 +240,7 @@
       AND r2, r2, 0x1
       LSL r2, r2, 4
       OR r4.w2, r4.w2, r2.w0            // bit[20] - TIME or XY mode             (0 = TIME)
+                                        // bit[21] - SEMICLOSED STATUS           (1 = PRIMED)
 
       LBCO r10, c25, OPENAMPL, 2        // load open loop ramp amplitude
       MOV r2, 0x7fff                    // ensure maximum amplitude not exceeded
