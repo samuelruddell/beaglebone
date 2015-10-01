@@ -86,7 +86,7 @@
 
 /* CLOSED LOOP */
     CLOSEDLOOP:
-        SUB r19, r9, r11.w0             // calculate error signal
+        SUB r19, r9, r11.w0             // calculate error signal as ADC - YLOCK
 
       PROPORTIONAL:
         MOV r28, r19                    // error signal value to MAC as operand 1
@@ -102,16 +102,17 @@
         XIN 0, r26, 8                   // load in product to r26 and r27
         ADD r16, r16, r26               // integrate lower product into r16
 
-        INT_OVERFLOW_TEST:                  // test for PID overflow
-          QBEQ DERIVATIVE, r16.w2, 0        // no overflow or underflow
-          MOV r2, 0xffff                    // to test for underflow
-          QBGT INT_UNDERFLOW, r16.w2, r2.w0 // underflow has occurred
+        INT_OVERFLOW_TEST:                      // test for integrator overflow
+          QBEQ DERIVATIVE, r16.w2, 0            // no overflow or underflow
+          QBBS INT_UNDERFLOW, r16.t31           // number is negative, check for underflow
           INT_OVERFLOW:
-            MOV r16, 0xffff              // max output
+            MOV r16, 0xffff                     // max output
             QBA DERIVATIVE
           INT_UNDERFLOW:
-            MOV r16, 0xffff0000          // min output, twos complement
-        QBA DERIVATIVE
+            MOV r2, 0xffff                      // to test for underflow
+            QBEQ DERIVATIVE, r16.w2, r2.w0      // number is just negative, no underflow here
+            MOV r16, 0xffff0000                 // min output, twos complement
+          QBA DERIVATIVE
 
         INTEGRAL_RESET:
           MOV r16, 0x0                  // integrator reset
@@ -121,7 +122,7 @@
         MOV r29, r14                    // move DGAIN to MAC
         XOUT 0, r28, 8                  // multiply
         XIN 0, r26, 8                   // load in product to r26 and r27
-        MOV r26, 17
+        MOV r17, r26                    // move lower product to r17
         MOV r18, r19                    // error signal to previous error signal
 
       COMBINE_PID:
