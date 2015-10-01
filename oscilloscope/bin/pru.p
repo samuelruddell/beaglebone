@@ -50,7 +50,7 @@
       LSL r6, r8, 12                    // use bits[31:12] for time, store in r6
       QBA PACK_END
     PACK_XY:
-      LSL r6, r7, 12                    // pack X data into 32 bit register
+      LSL r6, r7.w0, 12                 // pack X data into 32 bit register
     PACK_END:
       OR r6, r6, r9                     // pack as: time->bits[31:12], adc->bits[11:0]
 
@@ -86,7 +86,7 @@
 
 /* CLOSED LOOP */
     CLOSEDLOOP:
-        SUB r19, r9, r11                 // calculate error signal
+        SUB r19, r9, r11.w0             // calculate error signal
 
       PROPORTIONAL:
         MOV r28, r19                    // error signal value to MAC as operand 1
@@ -100,7 +100,17 @@
         MOV r29, r13                    // move IGAIN to MAC
         XOUT 0, r28, 8                  // multiply
         XIN 0, r26, 8                   // load in product to r26 and r27
-        ADD r15, r15, r26               // integrate lower product into r16
+        ADD r16, r16, r26               // integrate lower product into r16
+
+        INT_OVERFLOW_TEST:                  // test for PID overflow
+          QBEQ DERIVATIVE, r16.w2, 0        // no overflow or underflow
+          MOV r2, 0xffff                    // to test for underflow
+          QBGT INT_UNDERFLOW, r16.w2, r2.w0 // underflow has occurred
+          INT_OVERFLOW:
+            MOV r16, 0xffff              // max output
+            QBA DERIVATIVE
+          INT_UNDERFLOW:
+            MOV r16, 0xffff0000          // min output, twos complement
         QBA DERIVATIVE
 
         INTEGRAL_RESET:
@@ -111,15 +121,26 @@
         MOV r29, r14                    // move DGAIN to MAC
         XOUT 0, r28, 8                  // multiply
         XIN 0, r26, 8                   // load in product to r26 and r27
+        MOV r26, 17
         MOV r18, r19                    // error signal to previous error signal
 
       COMBINE_PID:
         ADD r2, r15, r16                // ADD P_RESULT and I_RESULT
         ADD r2, r2, r17                 // ADD D_RESULT
-        QBBS CLOSED_LOOP_OUT, r4.t17      // skip below step if locking to positive slope 
+        QBBS CLOSED_LOOP_OUT, r4.t17    // skip below step if locking to positive slope 
         RSB r2, r2, 0                   // Reverse Unsigned Integer Subtract r7 = 0 - r7
+
         CLOSED_LOOP_OUT:
-          ADD r7, r7, r2                // ADD PID result to DAC output
+          ADD r7, r7.w0, r2             // ADD PID result to DAC output
+
+        OVERFLOW_TEST:                  // test for PID overflow
+          QBEQ ENDLOOP, r7.w2, 0        // no overflow or underflow
+          QBBS UNDERFLOW, r7.t31        // number is negative therefore underflow
+          OVERFLOW:
+            MOV r7, 0xffff              // max output
+            QBA ENDLOOP
+          UNDERFLOW:
+            MOV r7, 0x0                 // min output
 
 /* SPI SEND DATA TO DAC */
     ENDLOOP:
@@ -182,10 +203,10 @@
 /* SUBROUTINES UTILISING JAL */
 
     LOAD_PARAMETERS:
-      AND r4.w2, r4.w2, 0b100                  // clear all bits to be changed, so that OR works
+      AND r4.w2, r4.w2, 0b100           // clear all bits to be changed, so that OR works
 
       LBCO r2, c25, OPENCLOSE, 4        // r4.w2 is booleans, description below
-      AND r2, r2, 0x1                   // ensure bit[0] only (bool)
+      AND r2, r2, 0x1                   // bitmask to ensure bit[0] only (bool)
       OR r4.w2, r4.w2, r2.w0            // bit[16]: OPEN / CLOSED LOOP          (0 = CLOSED LOOP) 
 
       LBCO r2, c25, LOCKSLOPE, 4
