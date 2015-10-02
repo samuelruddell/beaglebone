@@ -99,6 +99,8 @@
         SUB r18, r9, r11.w0             // set initial value for previous error signal
         CLR r4.t21                      // unprime semi-closed loop
 
+        JAL r23.w0, SETUP_ADC           // setup adc for closed loop
+
 /* CLOSED LOOP */
     CLOSEDLOOP:
         SUB r19, r9, r11.w0             // calculate error signal as ADC - YLOCK
