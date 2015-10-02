@@ -55,7 +55,7 @@
       OR r6, r6, r9                     // pack as: time->bits[31:12], adc->bits[11:0]
 
 /* OPEN LOOP */
-      QBBC SEMICLOSEDLOOP, r4.t16       // do semi-closed / closed loop if bit[16] clear
+      QBBC SEMICLOSEDLOOP, r4.t16       // do semi-closed / closed loop if bit[16] (open/closed loop) clear
     OPENLOOP:
       MOV r2, 0x8000                    // used to test whether amplitude reached below
       QBBC SCANDOWN, r4.t18             // scan down instead
@@ -78,8 +78,7 @@
 
       LOAD_ADC_PARAMETERS:              // LOAD new ADC parameters on open loop only
         JAL r23.w0, SETUP_ADC           // setup ADC subroutine 
-        QBBS ENDLOOP, r4.t21            // JUMP if semiclosed loop primed already
-        SET r4.t21                      // otherwise prime semiclosed loop
+        SET r4.t21                      // prime semiclosed loop
         QBA ENDLOOP
 
 /* SEMI-CLOSED LOOP */

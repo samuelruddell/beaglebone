@@ -83,7 +83,10 @@ int main (int argc, char **argv)
 
 			/* send interrupt to PRU and wait for EVTOUT */
 			// event 17 maps to r31.t31, event 18 maps to r31.t30
-			prussdrv_pru_send_wait_clear_event  ( 18, PRU_EVTOUT_0, PRU1_ARM_INTERRUPT);
+			//prussdrv_pru_send_event(18);
+			//prussdrv_pru_wait_event(PRU_EVTOUT_0);
+			//prussdrv_pru_clear_event(PRU1_ARM_INTERRUPT, PRU_EVTOUT0);
+			prussdrv_pru_send_wait_clear_event  ( 18, PRU_EVTOUT_0, 19);
 
 			/* Read PRU memory and store in MySQL database */
 			char *mysqlStrPointer = mysqlStr;
