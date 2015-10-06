@@ -45,14 +45,9 @@
       LBCO r8, c28, CYCLE, 4            // load in CYCLE COUNT
       LBBO r9, r21, 0, 4                // load 4 bytes from FIFO into r9
     
-    QBBS PACK_XY, r4.t20                // TIME or XY mode for oscilloscope 
-    PACK_TIME:                          // pack time data into 32 bit register
-      LSL r6, r8, 12                    // use bits[31:12] for time, store in r6
-      QBA PACK_END
-    PACK_XY:
-      LSL r6, r7.w0, 12                 // pack X data into 32 bit register
-    PACK_END:
-      OR r6, r6, r9                     // pack as: time->bits[31:12], adc->bits[11:0]
+    PACK:                               // pack DAC and ADC data into a single 32-bit register
+      MOV r6.w2, r7.w0                  // DAC value
+      MOV r6.w0, r9.w0                  // ADC value
 
 /* OPEN LOOP */
       QBBC SEMICLOSEDLOOP, r4.t16       // do semi-closed / closed loop if bit[16] (open/closed loop) clear
@@ -175,7 +170,8 @@
 /* STORING DATA TO MEMORY AND INTERRUPT IN HANDLING */
     WRITEDATA:
       QBEQ ARM_INTERRUPT, r3.w2, 0      // skip write if disabled
-      SBCO r6, c24, r3.w0, 4            // store data in PRU_DATARAM_1, offset r3.w0
+      SBCO r8, c25, r3.w0, 4            // store time in PRU_DATARAM_0, offset r3.w0
+      SBCO r6, c24, r3.w0, 4            // store packed data in PRU_DATARAM_1, offset r3.w0
       ADD r3.w0, r3.w0, 4               // increment counter
       QBA INT_CHECK                     // if writing enabled, no need for ARM interrupt check
     
@@ -221,36 +217,37 @@
 /* SUBROUTINES UTILISING JAL */
 
     LOAD_PARAMETERS:
+      MOV r1, 0x00010000                // PRUSS0_SHARED_MEMORY
       AND r4.w2, r4.w2, 0b100100        // clear all bits to be changed, so that OR works
 
-      LBCO r2, c25, OPENCLOSE, 4        // r4.w2 is booleans, description below
+      LBBO r2, r1, OPENCLOSE, 4         // r4.w2 is booleans, description below
       AND r2, r2, 0x1                   // bitmask to ensure bit[0] only (bool)
       OR r4.w2, r4.w2, r2.w0            // bit[16]: OPEN / CLOSED LOOP          (0 = CLOSED LOOP) 
 
-      LBCO r2, c25, LOCKSLOPE, 4
+      LBBO r2, r1, LOCKSLOPE, 4
       AND r2, r2, 0x1                   // bitmask to ensure single bit only
       LSL r2, r2, 1                     // logical shift left
       OR r4.w2, r4.w2, r2.w0            // bit[17] - LOCK SLOPE                  (0 = NEGATIVE SLOPE)
                                         // bit[18] - OPEN SCAN UP / DOWN         (0 = DOWN)
-      LBCO r2, c25, IRESET, 4
+      LBBO r2, r1, IRESET, 4
       AND r2, r2, 0x1
       LSL r2, r2, 3
       OR r4.w2, r4.w2, r2.w0            // bit[19] - INTEGRAL RESET              (1 = RESET)
 
-      LBCO r2, c25, TIME_XY, 4
+      LBBO r2, r1, TIME_XY, 4
       AND r2, r2, 0x1
       LSL r2, r2, 4
       OR r4.w2, r4.w2, r2.w0            // bit[20] - TIME or XY mode             (0 = TIME)
                                         // bit[21] - SEMICLOSED STATUS           (1 = PRIMED)
 
-      LBCO r10, c25, OPENAMPL, 2        // load open loop ramp amplitude
+      LBBO r10, r1, OPENAMPL, 2         // load open loop ramp amplitude
       MOV r2, 0x7fff                    // ensure maximum amplitude not exceeded
       AND r10, r10, r2                
-      LBCO r11.w2, c25, XLOCK, 2        // load PID controller DAC set point (for scan to)
-      LBCO r11.w0, c25, YLOCK, 2        // load PID controller set point
-      LBCO r12, c25, PGAIN, 4           // load PGAIN
-      LBCO r13, c25, IGAIN, 4           // load IGAIN
-      LBCO r14, c25, DGAIN, 4           // load DGAIN
+      LBBO r11.w2, r1, XLOCK, 2         // load PID controller DAC set point (for scan to)
+      LBBO r11.w0, r1, YLOCK, 2         // load PID controller set point
+      LBBO r12, r1, PGAIN, 4            // load PGAIN
+      LBBO r13, r1, IGAIN, 4            // load IGAIN
+      LBBO r14, r1, DGAIN, 4            // load DGAIN
       JMP r23.w0                        // RETURN
 
     SETUP_SPI:

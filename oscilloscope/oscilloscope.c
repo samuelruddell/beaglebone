@@ -41,9 +41,11 @@ int main (int argc, char **argv)
 	static unsigned int *pru0DataMemory_int;
 	static void *pru1DataMemory;
 	static unsigned int *pru1DataMemory_int;
+	static void *pruSharedDataMemory;
+	static unsigned int *pruSharedDataMemory_int;
 
-	char mysqlStr[60000];
-	unsigned int data[2048];
+	char mysqlStr[100000];
+	unsigned int data[2048], time[2048];
 	int i;
 	int mem_offset, mem_value;
 
@@ -64,13 +66,16 @@ int main (int argc, char **argv)
 	prussdrv_map_prumem(PRUSS0_PRU1_DATARAM, &pru1DataMemory);
 	pru1DataMemory_int = (unsigned int *) pru1DataMemory;
 
+	prussdrv_map_prumem(PRUSS0_SHARED_DATARAM, &pruSharedDataMemory);
+	pruSharedDataMemory_int = (unsigned int *) pruSharedDataMemory;
+
 	/* Load default settings and write to PRU memory */
 	mysql_query(conn, "SELECT addr, value FROM parameters");
 	result = mysql_store_result(conn);
 	while ((row = mysql_fetch_row(result))){
 		mem_offset = atoi(row[0]);
 		mem_value = atoi(row[1]);
-		*(pru0DataMemory_int + mem_offset) = mem_value;
+		*(pruSharedDataMemory_int + mem_offset) = mem_value;
 	}
 	mysql_free_result(result);	
 
@@ -90,22 +95,21 @@ int main (int argc, char **argv)
 
 			/* Read PRU memory and store in MySQL database */
 			char *mysqlStrPointer = mysqlStr;
-			mysqlStrPointer += sprintf(mysqlStrPointer, "INSERT INTO data (i, time, adc) VALUES");
+			mysqlStrPointer += sprintf(mysqlStrPointer, "INSERT INTO data (i, time, dac, adc) VALUES");
 			//mysqlStrPointer += sprintf(mysqlStrPointer, "REPLACE INTO data (i, time, adc) VALUES");
 
 			/* Build string for inserting data */
 			for(i=0; i<2048; i++){
-				data[i] = *(pru1DataMemory_int + i);
-				// time[i] = data[i] >> 12;		// unpack time data
-				// adc[i] = data[i] & 0x0fff;		// 12-bit bitmask for ADC values
+				time[i] = *(pru0DataMemory_int + i);	// 32-bit time value
+				data[i] = *(pru1DataMemory_int + i);	// 16-bit DAC value << 16 | 12-bit ADC value
 				if (i<2047){
-					mysqlStrPointer += sprintf(mysqlStrPointer, "(%hu,%u,%hu),", i, data[i] >> 12, data[i] & 0x0fff);
+					mysqlStrPointer += sprintf(mysqlStrPointer, "(%hu,%u,%hu,%hu),", i, time[i], data[i] >> 16, data[i] & 0x0fff);
 				} else {
-					mysqlStrPointer += sprintf(mysqlStrPointer, "(%hu,%u,%hu)", i, data[i] >> 12, data[i] & 0x0fff);
+					mysqlStrPointer += sprintf(mysqlStrPointer, "(%hu,%u,%hu,%hu)", i, time[i], data[i] >> 16, data[i] & 0x0fff);
 				}	
 			}
 
-			mysqlStrPointer += sprintf(mysqlStrPointer, " ON DUPLICATE KEY UPDATE i=VALUES(i), time=VALUES(time), adc=VALUES(adc)");
+			mysqlStrPointer += sprintf(mysqlStrPointer, " ON DUPLICATE KEY UPDATE i=VALUES(i), time=VALUES(time), dac=VALUES(dac), adc=VALUES(adc)");
 
 			/* Insert data to table */
 			if (mysql_query(conn, mysqlStr)) {
@@ -123,7 +127,7 @@ int main (int argc, char **argv)
 		while ((row = mysql_fetch_row(result))){
 			mem_offset = atoi(row[0]);
 			mem_value = atoi(row[1]);
-			*(pru0DataMemory_int + mem_offset) = mem_value;
+			*(pruSharedDataMemory_int + mem_offset) = mem_value;
 			// check status of RUN
 			if(mem_offset==0){
 				runScope = mem_value;			// set runScope to value of RUN
