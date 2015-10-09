@@ -91,7 +91,7 @@
         SEMI_TRANSITION:
         QBNE ENDLOOP, r11.w2, r7.w0     // continue semi-closed loop if values not equal
                                         // otherwise transition to closed loop
-        SUB r18, r9, r11.w0             // set initial value for previous error signal
+        SUB r18, r9, r11.w0             // set an initial value for previous error signal
         CLR r4.t21                      // unprime semi-closed loop
 
         JAL r23.w0, SETUP_ADC           // setup adc for closed loop
@@ -241,8 +241,8 @@
                                         // bit[21] - SEMICLOSED STATUS           (1 = PRIMED)
 
       LBBO r10, r1, OPENAMPL, 2         // load open loop ramp amplitude
-      MOV r2, 0x7fff                    // ensure maximum amplitude not exceeded
-      AND r10, r10, r2                
+      MOV r2.w0, 0x7fff                 // ensure maximum amplitude not exceeded
+      AND r10.w0, r10.w0, r2.w0
       LBBO r11.w2, r1, XLOCK, 2         // load PID controller DAC set point (for scan to)
       LBBO r11.w0, r1, YLOCK, 2         // load PID controller set point
       LBBO r12, r1, PGAIN, 4            // load PGAIN
