@@ -35,7 +35,7 @@
       XOUT 0, r25, 1                    // store MAC_mode to MAC
 
       JAL r23.w0, LOAD_PARAMETERS       // load parameters from memory subroutine
-      MOV r7, 0x8000                    // Start DAC at centre of range
+      MOV r7, r2.w2                     // Start DAC at scan point
 
       JAL r23.w0, SETUP_SPI             // setup SPI subroutine  
       JAL r23.w0, SETUP_ADC             // setup ADC subroutine 
@@ -56,20 +56,25 @@
 /* OPEN LOOP */
       QBBC SEMICLOSEDLOOP, r4.t0        // do semi-closed / closed loop if bit[16] (open/closed loop) clear
     OPENLOOP:
-      MOV r2, 0x8000                    // used to test whether amplitude reached below
+      MOV r2, r10.w2                    // used to test whether amplitude reached below
       QBBC SCANDOWN, r4.t16             // scan down instead
 
       SCANUP:
         ADD r2, r2, r10.w0              // test whether upper amplitude reached 
         QBLE TOGGLE_DIRECTION, r7, r2   // toggle direction if upper amplitude reached
+        MOV r2, 0xffff
+        QBEQ TOGGLE_DIRECTION, r7, r2   // toggle direction if max amplitude reached
         ADD r7, r7, 1                   // increase DAC output
         QBA ENDLOOP        
 
       SCANDOWN:
         SUB r2, r2, r10.w0              // test whether lower amplitude reached
-        QBGE TOGGLE_DIRECTION, r7, r2   // toggle direction if lower amplitude reached
-        SUB r7, r7, 1                   // decrease DAC output
-        QBA ENDLOOP        
+        QBBC SCANDOWN_CONT, r2.t31      // check if lower amplitude is negative 
+        MOV r2, 0x0                     // if negative set lower amplitude as zero 
+        SCANDOWN_CONT:
+          QBGE TOGGLE_DIRECTION, r7, r2 // toggle direction if lower amplitude reached
+          SUB r7, r7, 1                 // decrease DAC output
+          QBA ENDLOOP        
 
       TOGGLE_DIRECTION:
         MOV r7, r2                      // MOV min/max amplitude to DAC output
@@ -243,9 +248,8 @@
                                         // bit[17]: SEMI-CLOSED LOOP STATUS
                                         // bit[31]: WRITE OUT ENABLE
 
-      LBBO r10, r1, OPENAMPL, 2         // load open loop ramp amplitude
-      MOV r2.w0, 0x7fff                 // ensure maximum amplitude not exceeded
-      AND r10.w0, r10.w0, r2.w0
+      LBBO r10.w0, r1, OPENAMPL, 2      // load open loop ramp amplitude
+      LBBO r10.w2, r1, SCANPOINT, 2     // load open scan point
       LBBO r11.w2, r1, XLOCK, 2         // load PID controller DAC set point (for scan to)
       LBBO r11.w0, r1, YLOCK, 2         // load PID controller set point
       LBBO r12, r1, PGAIN, 4            // load PGAIN
