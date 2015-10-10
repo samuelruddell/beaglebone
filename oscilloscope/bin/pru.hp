@@ -13,13 +13,11 @@
 /* LOCAL MEMORY DEFINITIONS */
 #define BOOLEANS                0x4     // externally set booleans
 #define XLOCK_YLOCK             0x8     // XLOCK and YLOCK
-#define OPENAMPL                0x34    // open loop ramp amplitude memory offset
-#define SCANPOINT               0x38    // open loop scan centre
+#define OPEN_POINT_AMPL         0x34    // open loop ramp scan point and amplitude
 #define PGAIN                   0x40
 #define IGAIN                   0x44
 #define DGAIN                   0x48
-#define POS_IRESET		0x54    // max point to trigger integrator reset
-#define NEG_IRESET		0x58    // min point to trigger integrator reset
+#define IRESET_POS_NEG		0x54    // max and min point to trigger integrator reset
 
 /* ADC DEFINITIONS */
 #define ADC_                    0x44e0d000

@@ -270,15 +270,13 @@
                                         // bit[18]: AUTOLOCK STATUS
                                         // bit[31]: WRITE OUT ENABLE
 
-      LBBO r10.w0, r1, OPENAMPL, 2      // load open loop ramp amplitude
-      LBBO r10.w2, r1, SCANPOINT, 2     // load open scan point
+      LBBO r10, r1, OPEN_POINT_AMPL, 4  // load open loop ramp scan point and amplitude
       LBBO r11, r1, XLOCK_YLOCK, 4      // w2: DAC set point (for scan to)
                                         // w0: ADC set point / autolock point
       LBBO r12, r1, PGAIN, 4            // load PGAIN
       LBBO r13, r1, IGAIN, 4            // load IGAIN
       LBBO r14, r1, DGAIN, 4            // load DGAIN
-      LBBO r24.w2, r1, POS_IRESET, 2    // load INTEGRATOR AUTO OVERFLOW VALUE
-      LBBO r24.w0, r1, NEG_IRESET, 2    // load INTEGRATOR AUTO UNDERFLOW VALUE
+      LBBO r24, r1, IRESET_POS_NEG, 4   // load INTEGRATOR AUTO OVERFLOW AND UNDERFLOW VALUES
       JMP r23.w0                        // RETURN
 
     SETUP_SPI:

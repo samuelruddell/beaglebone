@@ -142,9 +142,11 @@ unsigned int mysqlGetParameters(MYSQL *conn, unsigned int *pruSharedDataMemory_i
 	MYSQL_ROW row;
 
 	int mem_offset, mem_value;
-	unsigned int runScope = 0;
-	unsigned int pruBooleans = 0x0;
-	unsigned int xlock_ylock = 0x0;
+	unsigned int runScope           = 0;
+	unsigned int pruBooleans        = 0x0;
+	unsigned int xlock_ylock        = 0x0;
+	unsigned int open_point_ampl    = 0x0;
+	unsigned int ireset_pos_neg     = 0x0;
 
 	mysql_query(conn, "SELECT addr, value FROM parameters");
 	result = mysql_store_result(conn);
@@ -180,17 +182,32 @@ unsigned int mysqlGetParameters(MYSQL *conn, unsigned int *pruSharedDataMemory_i
 			}
 			// pack XLOCK and YLOCK
 		} else if (mem_offset==2){
-			xlock_ylock |= (mem_value << 16);     	// XLOCK
+			xlock_ylock |= ((mem_value & 0xffff) << 16);    // XLOCK
 		} else if (mem_offset==3){
-			xlock_ylock |= mem_value;     		// YLOCK
+			xlock_ylock |= (mem_value & 0x0fff);            // YLOCK
+			// pack SCANPOINT and OPENAMPL
+		} else if (mem_offset==14){
+			open_point_ampl |= ((mem_value & 0xffff) << 16);// SCANPOINT
+		} else if (mem_offset==13){
+			open_point_ampl |= (mem_value & 0xffff);        // OPENAMPL
+			// pack AUTO INTEGRATOR OVERFLOW and UNDERFLOW
+		} else if (mem_offset==21){
+			ireset_pos_neg |= ((mem_value & 0xffff) << 16);  // POSITIVE OVERFLOW
+		} else if (mem_offset==22){
+			ireset_pos_neg |= (mem_value & 0xffff);          // NEGATIVE UNDERFLOW
 			// write memory normally
 		} else {
 			*(pruSharedDataMemory_int + mem_offset) = mem_value;
 		}
 	}
 
-	*(pruSharedDataMemory_int + 1) = pruBooleans;           // store booleans to PRU memory
-	*(pruSharedDataMemory_int + 2) = xlock_ylock;           // store booleans to PRU memory
+        // store packed data to pru memory
+	*(pruSharedDataMemory_int + 1) = pruBooleans;           
+	*(pruSharedDataMemory_int + 2) = xlock_ylock;          
+	*(pruSharedDataMemory_int + 13) = open_point_ampl;    
+	*(pruSharedDataMemory_int + 21) = ireset_pos_neg;    
+
+        // clean up and return runScope
 	mysql_free_result(result);	
 	return runScope;
 }
