@@ -26,13 +26,13 @@
       MOV r3.w2, 2048 << 2              // steps until interrupt * 4 (for 8192 bytes of memory)
       CLR r4.t31                        // disable writing until ready
 
-      LBCO r5, c28, 0, 4                // load in CYCLE settings
-      SET r5, 3                         // set bit 3 to enable CYCLE
-      SBCO r5, c28, 0, 4                // store CYCLE settings
-
       XIN 0, r25, 1                     // load in MAC settings (multiply accumulate)
       CLR r25.t0                        // set up multiply-only mode
       XOUT 0, r25, 1                    // store MAC_mode to MAC
+
+      LBCO r25, c28, 0, 4                // load in CYCLE settings
+      SET r25, 3                         // set bit 3 to enable CYCLE
+      SBCO r25, c28, 0, 4                // store CYCLE settings
 
       JAL r23.w0, LOAD_PARAMETERS       // load parameters from memory subroutine
       MOV r7, r2.w2                     // Start DAC at scan point
@@ -53,9 +53,28 @@
       MOV r6.w2, r7.w0                  // DAC value
       MOV r6.w0, r9.w0                  // ADC value
 
+/* PRE-LOOP */
+      QBBC SEMICLOSEDLOOP, r4.t0        // do semi-closed / closed loop if bit[0] (open/closed loop) clear
+      QBBC OPENLOOP, r4.t4              // if no autolock, skip to open loop
+      QBBS CLOSEDLOOP, r4.t18           // if autolock enabled && locked status: do closed loop
+    AUTOLOCK_TEST:
+      QBBC AUTOLOCK_BELOW, r4.t5        // test for autolock below
+      AUTOLOCK_ABOVE:                   // do closed loop if ADC reading >= autolock point
+        QBGT OPENLOOP, r9.w0, r11.w0    // do open loop if autolock condition not met  
+        QBA AUTOLOCK                    // else autolock
+      AUTOLOCK_BELOW:
+        QBLT OPENLOOP, r9.w0, r11.w0    // do open loop if autolock condition not met  
+    AUTOLOCK:
+        SUB r18, r9, r11.w0             // set an initial value for previous error signal
+        CLR r4.t17                      // unprime semi-closed loop
+        SET r4.t18                      // set internal autolock status (perform closed loop)
+        SET r4.t0                       // temporarily set closed loop for adc_setup
+        JAL r23.w0, SETUP_ADC           // setup adc for closed loop
+        QBA CLOSEDLOOP
+      
 /* OPEN LOOP */
-      QBBC SEMICLOSEDLOOP, r4.t0        // do semi-closed / closed loop if bit[16] (open/closed loop) clear
     OPENLOOP:
+      CLR r4.t18                        // ensure internal autolock status clear (perform open loop)
       MOV r2, r10.w2                    // used to test whether amplitude reached below
       QBBC SCANDOWN, r4.t16             // scan down instead
 
@@ -98,12 +117,12 @@
           SUB r7, r7, 1
 
         SEMI_TRANSITION:
-        QBNE ENDLOOP, r11.w2, r7.w0     // continue semi-closed loop if values not equal
+          QBNE ENDLOOP, r11.w2, r7.w0   // continue semi-closed loop if values not equal
                                         // otherwise transition to closed loop
-        SUB r18, r9, r11.w0             // set an initial value for previous error signal
-        CLR r4.t17                      // unprime semi-closed loop
+          SUB r18, r9, r11.w0           // set an initial value for previous error signal
+          CLR r4.t17                    // unprime semi-closed loop
 
-        JAL r23.w0, SETUP_ADC           // setup adc for closed loop
+          JAL r23.w0, SETUP_ADC         // setup adc for closed loop
 
 /* CLOSED LOOP */
     CLOSEDLOOP:
@@ -196,8 +215,8 @@
     ARM_INTERRUPT:
       QBBC LOAD_DATA, r31.t30           // skip this if no interrupt
       SET r4.t31                        // enable writing
-      SET r5, 3                         // set bit 3 to enable CYCLE timer
-      SBCO r5, c28, 0, 4                // store CYCLE settings 
+      SET r25, 3                         // set bit 3 to enable CYCLE timer
+      SBCO r25, c28, 0, 4                // store CYCLE settings 
     
     CLEAR_ARM_INTERRUPT:
       MOV r2, 1<<18                     // write 1 to clear event
@@ -215,8 +234,8 @@
     INTERRUPT:                          // memory full
       MOV r31.b0, PRU_INTERRUPT | PRU_EVTOUT_0
     
-      CLR r5, 3                         // clear bit 3 to disable CYCLE
-      SBCO r5, C28, 0, 4                // store CYCLE settings
+      CLR r25, 3                         // clear bit 3 to disable CYCLE
+      SBCO r25, C28, 0, 4                // store CYCLE settings
       MOV r2, 0x0                       // 0x0 to reset CYCLE count to zero
       SBCO r2, C28, CYCLE, 4            // clear CYCLE counter
     
@@ -242,16 +261,19 @@
                                         // bit[1]: INTEGRATOR RESET
                                         // bit[2]: AUTOMATIC INTEGRATOR RESET ON OVERFLOW / UNDERFLOW
                                         // bit[3]: LOCK SLOPE
+                                        // bit[4]: AUTO LOCK ENABLE
+                                        // bit[5]: AUTO LOCK ABOVE / BELOW POINT
 
                                         // internally set booleans stored in r4.w2
                                         // bit[16]: OPEN LOOP SCAN UP / DOWN
                                         // bit[17]: SEMI-CLOSED LOOP STATUS
+                                        // bit[18]: AUTOLOCK STATUS
                                         // bit[31]: WRITE OUT ENABLE
 
       LBBO r10.w0, r1, OPENAMPL, 2      // load open loop ramp amplitude
       LBBO r10.w2, r1, SCANPOINT, 2     // load open scan point
       LBBO r11.w2, r1, XLOCK, 2         // load PID controller DAC set point (for scan to)
-      LBBO r11.w0, r1, YLOCK, 2         // load PID controller set point
+      LBBO r11.w0, r1, YLOCK, 2         // load PID controller set point / autolock point
       LBBO r12, r1, PGAIN, 4            // load PGAIN
       LBBO r13, r1, IGAIN, 4            // load IGAIN
       LBBO r14, r1, DGAIN, 4            // load DGAIN

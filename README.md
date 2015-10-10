@@ -15,13 +15,13 @@ To compile the software, ensure you have all the correct compilers (gcc, pasm). 
 | r2            | TMP VALUE                             |
 | r3            | w2: MEMORY SIZE               w0: WRITE COUNTER       |
 | r4            | BOOLS 	                        |
-| r5            | CYCLE SETTINGS                        |
+| r5            |                                       |
 | r6            | PACKED DATA                           |
 | r7            | DAC VALUE                             |
 | r8            | TIME                                  |
 | r9            | ADC                                   |
 | r10           | w2: OPEN LOOP SCAN POINT      w0: OPEN LOOP AMPLITUDE |
-| r11           | w2: XLOCK	                w0: YLOCK		|
+| r11           | w2: XLOCK	                w0: YLOCK / AUTOLOCK POINT|
 | r12           | PGAIN                                 |
 | r13           | IGAIN                                 |
 | r14           | DGAIN                                 | 
@@ -35,7 +35,7 @@ To compile the software, ensure you have all the correct compilers (gcc, pasm). 
 | r22           | MCSPI1_                               |
 | r23           |                               w0: JAL REGISTER        |
 | r24           | w2: AUTO INT OVERFLOW         w0: AUTO INT UNDERFLOW  |
-| r25           | MAC SETTINGS                          |
+| r25           | MAC SETTINGS / CYCLE SETTINGS         |
 | r26           | MAC LOWER PRODUCT                     |
 | r27           | MAC UPPER PRODUCT                     |
 | r28           | MAC OPERAND 1                         |

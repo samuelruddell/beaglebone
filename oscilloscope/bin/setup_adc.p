@@ -32,7 +32,7 @@ FIFO_EMPTY:
   SBBO r2, r20, STEPCONFIG1, 4  // Store configuration to ADC_STEPCONFIG1 register
 
 ADC_OPENDELAY:                  // Step delay configuration 1 for open loop
-  QBBC ADC_CLOSEDDELAY, r4.t16  // use separate delay for closed loop
+  QBBC ADC_CLOSEDDELAY, r4.t0   // use separate delay for closed loop
   LBBO r2, r1, 0x28, 4          // number of ADC clock cycles to wait after applying STEPCONFIG1 
   MOV r1, 0x3ffff               // bitmask for bits[17:0]
   AND r2, r2, r1                // apply bitmask

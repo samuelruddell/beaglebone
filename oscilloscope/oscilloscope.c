@@ -160,6 +160,10 @@ unsigned int mysqlGetParameters(MYSQL *conn, unsigned int *pruSharedDataMemory_i
                         pruBooleans |= 0x4;     // auto integrator reset
                 } else if (mem_offset==23 && mem_value==1){
                         pruBooleans |= 0x8;     // lock slope
+                } else if (mem_offset==24 && mem_value==1){
+                        pruBooleans |= 0x10;     // autolock enable
+                } else if (mem_offset==25 && mem_value==1){
+                        pruBooleans |= 0x20;     // autolock above (1) / below (0)
                 } else {
                         *(pruSharedDataMemory_int + mem_offset) = mem_value;
                 }
