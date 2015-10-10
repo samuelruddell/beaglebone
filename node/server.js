@@ -24,7 +24,7 @@ connection.connect(function(err) {
 });
 
 // create web server
-http.listen(8134);
+http.listen(8133);
 
 // serve static content
 app.use(express.static('public'));
@@ -36,7 +36,7 @@ app.get('/', function (req, res) {
 // polling loop
 var pollingLoop = function() {
   // query database
-  var query = connection.query('SELECT time,adc FROM data'),
+  var query = connection.query('SELECT time,dac,adc FROM data'),
     theData = [];
     
   // set up query listeners
@@ -47,7 +47,7 @@ var pollingLoop = function() {
   })
   .on('result', function(data) {
     // fill array with the data
-    theData.push([data.time, data.adc]); 
+    theData.push([data.dac, data.adc]);
   })
   .on('end', function() {
     // loop only if there are sockets still connected

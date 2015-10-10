@@ -14,7 +14,10 @@
 	<script>
 	  var socket = io();
 	  socket.on('notification', function (data) {
-	    $.plot("#oscilloscope", [data.theData]);
+	    $.plot("#oscilloscope", [data.theData], {
+		series: {shadowSize: 0 		// Drawing is faster without shadows
+		}
+	    });
   	  });
 	</script>
   </head>
