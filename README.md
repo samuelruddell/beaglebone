@@ -1,5 +1,5 @@
 # beaglebone black PID controller
-A PID controller for the beaglebone black.
+A PID controller for the beaglebone black. Please note that this software is a work in progress.
 
 To use this software, you will need to load a device tree overlay (.dtbo) to allow the device to understand how the hardware is supposed to be used. This can be achieved by (e.g.):
 
@@ -10,11 +10,11 @@ To compile the software, ensure you have all the correct compilers (gcc, pasm). 
 ## PRU Register assignment
 | REGISTER      |                   USE                 |
 | :------------ | :------------------------------------ |
-| r0            | r[4:0] XFR SHIFT                      |
+| r0            | bits[4:0] XFR SHIFT                   |
 | r1            | TMP ADDR                              |
 | r2            | TMP VALUE                             |
 | r3            | w2: MEMORY SIZE               w0: WRITE COUNTER       |
-| r4            | bools 	                        |
+| r4            | BOOLS 	                        |
 | r5            | CYCLE SETTINGS                        |
 | r6            | PACKED DATA                           |
 | r7            | DAC VALUE                             |
@@ -34,7 +34,7 @@ To compile the software, ensure you have all the correct compilers (gcc, pasm). 
 | r21           | ADC_FIFO0                             |
 | r22           | MCSPI1_                               |
 | r23           |                               w0: JAL REGISTER        |
-| r24           |                                       |
+| r24           | w2: AUTO INT OVERFLOW         w0: AUTO INT UNDERFLOW  |
 | r25           | MAC SETTINGS                          |
 | r26           | MAC LOWER PRODUCT                     |
 | r27           | MAC UPPER PRODUCT                     |

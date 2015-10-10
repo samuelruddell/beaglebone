@@ -11,7 +11,10 @@
       LBCO r2, c4, 4, 4                 // SYSCFG register
       CLR r2, r2, 4                     // enable OCP master ports
       SBCO r2, c4, 4, 4                 // store SYSCFG settings
-    
+
+      MOV r2, 0x3                       // XFR shift enabled, give PRU1 scratch priority
+      SBCO r2, c4, 0x34, 4              // store SPP settings (Scratch Pad Priority)
+
       MOV r1, CTPPR0                    // Constant Table Programmable Pointer
       MOV r2, 0x240                     // set up c28 as PRU CTRL register pointer
       SBBO r2, r1, 0, 4                 // store address for easy reference later
@@ -115,11 +118,12 @@
         XIN 0, r26, 8                   // load in product to r26 and r27
         ADD r16, r16, r26               // integrate lower product into r16
 
+        QBBS AUTO_INT_RESET_TEST, r4.t2         // if auto integrator reset enabled, check for that instead
         INT_OVERFLOW_TEST:                      // test for integrator overflow
           QBEQ DERIVATIVE, r16.w2, 0            // no overflow or underflow
           QBBS INT_UNDERFLOW, r16.t31           // number is negative, check for underflow
           INT_OVERFLOW:
-            MOV r16, 0xffff                     // max output
+            MOV r16, 0xffff                     // overflow occurred, set max output
             QBA DERIVATIVE
           INT_UNDERFLOW:
             MOV r2, 0xffff                      // to test for underflow
@@ -127,6 +131,14 @@
             MOV r16, 0xffff0000                 // min output, twos complement
           QBA DERIVATIVE
 
+        AUTO_INT_RESET_TEST:                    // test for integrator overflow
+          QBBS AUTO_UNDERFLOW, r16.t31          // integrator is negative, test for underflow
+          AUTO_OVERFLOW:
+            QBGT DERIVATIVE, r16.w0, r24.w2     // no overflow
+            QBA INTEGRAL_RESET                  // overflow has occurred, reset integrator
+          AUTO_UNDERFLOW:
+            QBLT DERIVATIVE, r16.w0, r24.w0     // no underflow
+                                                // else underflow has occurred, proceed to reset integrator
         INTEGRAL_RESET:
           MOV r16, 0x0                  // integrator reset
 
@@ -141,12 +153,12 @@
       COMBINE_PID:
         ADD r2, r15, r16                // ADD P_RESULT and I_RESULT
         ADD r2, r2, r17                 // ADD D_RESULT
-        QBBS CLOSED_LOOP_OUT, r4.t2    // skip below step if locking to positive slope 
+        QBBS CLOSED_LOOP_OUT, r4.t3     // skip below step if locking to positive slope 
         RSB r2, r2, 0                   // Reverse Unsigned Integer Subtract r7 = 0 - r7
 
         CLOSED_LOOP_OUT:
           ADD r7, r7.w0, r2             // ADD PID result to DAC output
-
+        
         OVERFLOW_TEST:                  // test for PID overflow
           QBEQ ENDLOOP, r7.w2, 0        // no overflow or underflow
           QBBS UNDERFLOW, r7.t31        // number is negative therefore underflow
@@ -223,7 +235,8 @@
       LBBO r4.w0, r1, BOOLEANS, 2       // load externally set booleans into r4.w0
                                         // bit[0]: OPEN / CLOSED LOOP
                                         // bit[1]: INTEGRATOR RESET
-                                        // bit[2]: LOCK SLOPE
+                                        // bit[2]: AUTOMATIC INTEGRATOR RESET ON OVERFLOW / UNDERFLOW
+                                        // bit[3]: LOCK SLOPE
 
                                         // internally set booleans stored in r4.w2
                                         // bit[16]: OPEN LOOP SCAN UP / DOWN
@@ -238,6 +251,8 @@
       LBBO r12, r1, PGAIN, 4            // load PGAIN
       LBBO r13, r1, IGAIN, 4            // load IGAIN
       LBBO r14, r1, DGAIN, 4            // load DGAIN
+      LBBO r24.w2, r1, POS_IRESET, 2    // load INTEGRATOR AUTO OVERFLOW VALUE
+      LBBO r24.w0, r1, NEG_IRESET, 2    // load INTEGRATOR AUTO UNDERFLOW VALUE
       JMP r23.w0                        // RETURN
 
     SETUP_SPI:

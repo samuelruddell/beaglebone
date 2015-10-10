@@ -18,6 +18,8 @@
 #define PGAIN                   0x40
 #define IGAIN                   0x44
 #define DGAIN                   0x48
+#define POS_IRESET		0x54
+#define NEG_IRESET		0x58
 
 /* ADC DEFINITIONS */
 #define ADC_                    0x44e0d000
