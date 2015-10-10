@@ -162,7 +162,7 @@
             QBA INTEGRAL_RESET                  // overflow has occurred, reset integrator
           AUTO_UNDERFLOW:
             QBLT DERIVATIVE, r16.w0, r24.w0     // no underflow
-                                                // else underflow has occurred, proceed to reset integrator
+                                                // else underflow has occurred, reset integrator
         INTEGRAL_RESET:
           MOV r16, 0x0                  // integrator reset
 
@@ -178,10 +178,10 @@
         ADD r2, r15, r16                // ADD P_RESULT and I_RESULT
         ADD r2, r2, r17                 // ADD D_RESULT
         QBBS CLOSED_LOOP_OUT, r4.t3     // skip below step if locking to positive slope 
-        RSB r2, r2, 0                   // Reverse Unsigned Integer Subtract r7 = 0 - r7
+        RSB r2, r2, 0                   // Reverse Unsigned Integer Subtract r2 = 0 - r2
 
         CLOSED_LOOP_OUT:
-          ADD r7, r7.w0, r2             // ADD PID result to DAC output
+          ADD r7, r7, r2                // ADD PID result to DAC output
         
         OVERFLOW_TEST:                  // test for PID overflow
           QBEQ ENDLOOP, r7.w2, 0        // no overflow or underflow
@@ -272,8 +272,8 @@
 
       LBBO r10.w0, r1, OPENAMPL, 2      // load open loop ramp amplitude
       LBBO r10.w2, r1, SCANPOINT, 2     // load open scan point
-      LBBO r11.w2, r1, XLOCK, 2         // load PID controller DAC set point (for scan to)
-      LBBO r11.w0, r1, YLOCK, 2         // load PID controller set point / autolock point
+      LBBO r11, r1, XLOCK_YLOCK, 4      // w2: DAC set point (for scan to)
+                                        // w0: ADC set point / autolock point
       LBBO r12, r1, PGAIN, 4            // load PGAIN
       LBBO r13, r1, IGAIN, 4            // load IGAIN
       LBBO r14, r1, DGAIN, 4            // load DGAIN

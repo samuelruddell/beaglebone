@@ -12,8 +12,7 @@
 
 /* LOCAL MEMORY DEFINITIONS */
 #define BOOLEANS                0x4     // externally set booleans
-#define XLOCK                   0x8     // DAC lock point (for scan to)
-#define YLOCK                   0xc     // PID set point
+#define XLOCK_YLOCK             0x8     // XLOCK and YLOCK
 #define OPENAMPL                0x34    // open loop ramp amplitude memory offset
 #define SCANPOINT               0x38    // open loop scan centre
 #define PGAIN                   0x40
