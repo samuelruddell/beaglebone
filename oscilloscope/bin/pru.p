@@ -1,4 +1,4 @@
-/* PRU_1 OSCILLOSCOPE CODE */
+/* PRU_1 PID CONTROLLER CODE */
 /* Copyright (C) 2015 Samuel Ruddell */
 
 .origin 0
@@ -19,8 +19,9 @@
       MOV r2, 0x0
       SBCO r2, c28, CTBIR0, 4           // ensure c24 and c25 setup correctly
     
-      MOV r3, 0                         // step counter register, disable writing until ready
-      MOV r4.w0, 2048 << 2              // steps until interrupt * 4 (for 8192 bytes of memory)
+      MOV r3, 0                         // step counter register
+      MOV r3.w2, 2048 << 2              // steps until interrupt * 4 (for 8192 bytes of memory)
+      CLR r4.t31                        // disable writing until ready
 
       LBCO r5, c28, 0, 4                // load in CYCLE settings
       SET r5, 3                         // set bit 3 to enable CYCLE
@@ -50,10 +51,10 @@
       MOV r6.w0, r9.w0                  // ADC value
 
 /* OPEN LOOP */
-      QBBC SEMICLOSEDLOOP, r4.t16       // do semi-closed / closed loop if bit[16] (open/closed loop) clear
+      QBBC SEMICLOSEDLOOP, r4.t0        // do semi-closed / closed loop if bit[16] (open/closed loop) clear
     OPENLOOP:
       MOV r2, 0x8000                    // used to test whether amplitude reached below
-      QBBC SCANDOWN, r4.t18             // scan down instead
+      QBBC SCANDOWN, r4.t16             // scan down instead
 
       SCANUP:
         ADD r2, r2, r10.w0              // test whether upper amplitude reached 
@@ -69,16 +70,16 @@
 
       TOGGLE_DIRECTION:
         MOV r7, r2                      // MOV min/max amplitude to DAC output
-        XOR r4.w2, r4.w2, 1<<2          // TOGGLE scan UP/DOWN
+        XOR r4.b2, r4.b2, 1             // TOGGLE scan UP/DOWN
 
       LOAD_ADC_PARAMETERS:              // LOAD new ADC parameters on open loop only
         JAL r23.w0, SETUP_ADC           // setup ADC subroutine 
-        SET r4.t21                      // prime semiclosed loop
+        SET r4.t17                      // prime semiclosed loop
         QBA ENDLOOP
 
 /* SEMI-CLOSED LOOP */
       SEMICLOSEDLOOP:                   // Scan DAC to XLOCK before enabling closed loop 
-        QBBC CLOSEDLOOP, r4.t21         // no SEMI-CLOSED LOOP
+        QBBC CLOSEDLOOP, r4.t17         // no SEMI-CLOSED LOOP
         QBLT SEMI_SCANDOWN, r7.w0, r11.w2        
 
         SEMI_SCANUP:
@@ -92,7 +93,7 @@
         QBNE ENDLOOP, r11.w2, r7.w0     // continue semi-closed loop if values not equal
                                         // otherwise transition to closed loop
         SUB r18, r9, r11.w0             // set an initial value for previous error signal
-        CLR r4.t21                      // unprime semi-closed loop
+        CLR r4.t17                      // unprime semi-closed loop
 
         JAL r23.w0, SETUP_ADC           // setup adc for closed loop
 
@@ -108,7 +109,7 @@
         MOV r15, r26                    // store lower product in r15
 
       INTEGRAL:
-        QBBS INTEGRAL_RESET, r4.t19     // skip this if integrator reset active
+        QBBS INTEGRAL_RESET, r4.t1      // skip this if integrator reset active
         MOV r29, r13                    // move IGAIN to MAC
         XOUT 0, r28, 8                  // multiply
         XIN 0, r26, 8                   // load in product to r26 and r27
@@ -140,7 +141,7 @@
       COMBINE_PID:
         ADD r2, r15, r16                // ADD P_RESULT and I_RESULT
         ADD r2, r2, r17                 // ADD D_RESULT
-        QBBS CLOSED_LOOP_OUT, r4.t17    // skip below step if locking to positive slope 
+        QBBS CLOSED_LOOP_OUT, r4.t2    // skip below step if locking to positive slope 
         RSB r2, r2, 0                   // Reverse Unsigned Integer Subtract r7 = 0 - r7
 
         CLOSED_LOOP_OUT:
@@ -169,7 +170,7 @@
 
 /* STORING DATA TO MEMORY AND INTERRUPT IN HANDLING */
     WRITEDATA:
-      QBEQ ARM_INTERRUPT, r3.w2, 0      // skip write if disabled
+      QBBC ARM_INTERRUPT, r4.t31        // skip write if disabled
       SBCO r8, c25, r3.w0, 4            // store time in PRU_DATARAM_0, offset r3.w0
       SBCO r6, c24, r3.w0, 4            // store packed data in PRU_DATARAM_1, offset r3.w0
       ADD r3.w0, r3.w0, 4               // increment counter
@@ -177,7 +178,7 @@
     
     ARM_INTERRUPT:
       QBBC LOAD_DATA, r31.t30           // skip this if no interrupt
-      MOV r3.w2, 1                      // enable writing
+      SET r4.t31                        // enable writing
       SET r5, 3                         // set bit 3 to enable CYCLE timer
       SBCO r5, c28, 0, 4                // store CYCLE settings 
     
@@ -192,7 +193,7 @@
       JAL r23.w0, LOAD_PARAMETERS       // load parameters
 
     INT_CHECK:
-      QBNE WAIT, r3.w0, r4.w0           // check number of samples taken
+      QBNE WAIT, r3.w2, r3.w0           // check number of samples taken
     
     INTERRUPT:                          // memory full
       MOV r31.b0, PRU_INTERRUPT | PRU_EVTOUT_0
@@ -202,7 +203,8 @@
       MOV r2, 0x0                       // 0x0 to reset CYCLE count to zero
       SBCO r2, C28, CYCLE, 4            // clear CYCLE counter
     
-      MOV r3, 0                         // start from 0th memory address; disable writing
+      MOV r3.w0, 0                      // start from 0th memory address
+      CLR r4.t31                        // disable writing
     
       QBA WAIT
 
@@ -218,27 +220,15 @@
 
     LOAD_PARAMETERS:
       MOV r1, 0x00010000                // PRUSS0_SHARED_MEMORY
-      AND r4.w2, r4.w2, 0b100100        // clear all bits to be changed, so that OR works
+      LBBO r4.w0, r1, BOOLEANS, 2       // load externally set booleans into r4.w0
+                                        // bit[0]: OPEN / CLOSED LOOP
+                                        // bit[1]: INTEGRATOR RESET
+                                        // bit[2]: LOCK SLOPE
 
-      LBBO r2, r1, OPENCLOSE, 4         // r4.w2 is booleans, description below
-      AND r2, r2, 0x1                   // bitmask to ensure bit[0] only (bool)
-      OR r4.w2, r4.w2, r2.w0            // bit[16]: OPEN / CLOSED LOOP          (0 = CLOSED LOOP) 
-
-      LBBO r2, r1, LOCKSLOPE, 4
-      AND r2, r2, 0x1                   // bitmask to ensure single bit only
-      LSL r2, r2, 1                     // logical shift left
-      OR r4.w2, r4.w2, r2.w0            // bit[17] - LOCK SLOPE                  (0 = NEGATIVE SLOPE)
-                                        // bit[18] - OPEN SCAN UP / DOWN         (0 = DOWN)
-      LBBO r2, r1, IRESET, 4
-      AND r2, r2, 0x1
-      LSL r2, r2, 3
-      OR r4.w2, r4.w2, r2.w0            // bit[19] - INTEGRAL RESET              (1 = RESET)
-
-      LBBO r2, r1, TIME_XY, 4
-      AND r2, r2, 0x1
-      LSL r2, r2, 4
-      OR r4.w2, r4.w2, r2.w0            // bit[20] - TIME or XY mode             (0 = TIME)
-                                        // bit[21] - SEMICLOSED STATUS           (1 = PRIMED)
+                                        // internally set booleans stored in r4.w2
+                                        // bit[16]: OPEN LOOP SCAN UP / DOWN
+                                        // bit[17]: SEMI-CLOSED LOOP STATUS
+                                        // bit[31]: WRITE OUT ENABLE
 
       LBBO r10, r1, OPENAMPL, 2         // load open loop ramp amplitude
       MOV r2.w0, 0x7fff                 // ensure maximum amplitude not exceeded
