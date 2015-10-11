@@ -12,8 +12,8 @@
       CLR r2, r2, 4                     // enable OCP master ports
       SBCO r2, c4, 4, 4                 // store SYSCFG settings
 
-      MOV r2, 0x3                       // XFR shift enabled, give PRU1 scratch priority
-      SBCO r2, c4, 0x34, 4              // store SPP settings (Scratch Pad Priority)
+      // MOV r2, 0x3                    // XFR shift enabled, give PRU1 scratch priority
+      // SBCO r2, c4, 0x34, 4           // store SPP settings (Scratch Pad Priority)
 
       MOV r1, CTPPR0                    // Constant Table Programmable Pointer
       MOV r2, 0x240                     // set up c28 as PRU CTRL register pointer
@@ -30,9 +30,9 @@
       CLR r25.t0                        // set up multiply-only mode
       XOUT 0, r25, 1                    // store MAC_mode to MAC
 
-      LBCO r25, c28, 0, 4                // load in CYCLE settings
-      SET r25, 3                         // set bit 3 to enable CYCLE
-      SBCO r25, c28, 0, 4                // store CYCLE settings
+      LBCO r25, c28, 0, 4               // load in CYCLE settings
+      SET r25, 3                        // set bit 3 to enable CYCLE
+      SBCO r25, c28, 0, 4               // store CYCLE settings
 
       JAL r23.w0, LOAD_PARAMETERS       // load parameters from memory subroutine
       MOV r7, r2.w2                     // Start DAC at scan point
@@ -215,8 +215,8 @@
     ARM_INTERRUPT:
       QBBC LOAD_DATA, r31.t30           // skip this if no interrupt
       SET r4.t31                        // enable writing
-      SET r25, 3                         // set bit 3 to enable CYCLE timer
-      SBCO r25, c28, 0, 4                // store CYCLE settings 
+      SET r25, 3                        // set bit 3 to enable CYCLE timer
+      SBCO r25, c28, 0, 4               // store CYCLE settings 
     
     CLEAR_ARM_INTERRUPT:
       MOV r2, 1<<18                     // write 1 to clear event
@@ -234,8 +234,8 @@
     INTERRUPT:                          // memory full
       MOV r31.b0, PRU_INTERRUPT | PRU_EVTOUT_0
     
-      CLR r25, 3                         // clear bit 3 to disable CYCLE
-      SBCO r25, C28, 0, 4                // store CYCLE settings
+      CLR r25, 3                        // clear bit 3 to disable CYCLE
+      SBCO r25, C28, 0, 4               // store CYCLE settings
       MOV r2, 0x0                       // 0x0 to reset CYCLE count to zero
       SBCO r2, C28, CYCLE, 4            // clear CYCLE counter
     

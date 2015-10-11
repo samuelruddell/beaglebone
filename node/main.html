@@ -9,17 +9,8 @@
 	<script src="/socket.io/socket.io.js"></script>
 	<script src="/js/jquery.min.js"></script>
         <script src="/js/jquery.flot.js"></script>
+        <script src="/js/client.js"></script>
 
-	<!-- script to update oscilloscope when data is pushed from server to client -->
-	<script>
-	  var socket = io();
-	  socket.on('notification', function (data) {
-	    $.plot("#oscilloscope", [data.theData], {
-		series: {shadowSize: 0 		// Drawing is faster without shadows
-		}
-	    });
-  	  });
-	</script>
   </head>
   <body>
 	<div class="container">
@@ -93,13 +84,8 @@
 	      <div class="navbar-header">
 		<a class="navbar-brand">BeagleBone Black Oscilloscope</a>
 		<button onclick="run()" class="btn btn-primary navbar-btn" aria-expanded="false">RUN</button>
+		<button onclick="submitForm()" class="btn btn-default navbar-btn" aria-expanded="false">SUBMIT</button>
 
-		<!-- run function -->
-	   	<script>
-		function run(){
-	      	  socket.emit('run');
-		}
-	  	</script>
 	      </div>
 	    </div>
 	  </nav>
