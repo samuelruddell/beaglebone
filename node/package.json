@@ -1,0 +1,17 @@
+{
+  "name": "node",
+  "version": "1.0.0",
+  "description": "Beaglebone Black PID controller - interface server",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Samuel Ruddell",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.13.3",
+    "fs": "0.0.2",
+    "http": "0.0.0",
+    "node-mysql": "^0.4.2"
+  }
+}
