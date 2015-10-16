@@ -29,9 +29,9 @@
 	}
 
 	//
-	// PID controller configurations.
+	// socket configurations.
 	//
-	var pid = {
+	var sockets = {
 		// Poll interval in milliseconds.
 		pollingInterval : 500
 	}
@@ -46,6 +46,6 @@
 	// Make the configuration sections accessible when loaded as a module.
 	module.exports.server 	= server
 	module.exports.mysql 	= mysql
-	module.exports.pid 	= pid
+	module.exports.sockets 	= sockets
 	module.exports.route 	= route
 }())

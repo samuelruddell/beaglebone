@@ -3,15 +3,16 @@
 //
 
 // Load the server-specific configurations.
-var express 		= require("express"),
+var express 		= require('express'),
     app 		= express(),
-    configs 		= require("./configs").server,
-    router 		= require("./router"),
-    database 		= require("./database")
+    configs 		= require('./configs').server,
+    router 		= require('./router'),
+    database 		= require('./database')
+    sockets 		= require('./sockets')
 
 // Attempt to open a connection to the configured database.
 if (database.connect()) {
-  console.log("Server: failed to establish database connection. Exiting.")
+  console.log('Server: failed to establish database connection. Exiting.')
   return
 }
 
@@ -22,26 +23,37 @@ router.loadRoutes(app)
 app.use(express.static(configs.clientContentPath))
 
 // Serve the client start page at the root address.
-app.get("/", function (req, res) {
+app.get('/', function (req, res) {
   res.sendFile(configs.clientStartPage)
 })
 
 // Create our HTTP socket.
 var server = app.listen(configs.port, function () {
-  console.log("Server is now listening at http://%s:%s",
+  console.log('Server is now listening at http://%s:%s',
     server.address().address, 
     server.address().port)
 })
 
-// test database querying
+// Utilise sockets to keep clients updated
+io = require('socket.io').listen(server)
+
+io.on('connection', function(client) {
+	sockets.connect(client) 
+})
+
+
+
+
+
+/* test database querying
 function queryDebug(data) {
 	console.log(data)
 }
 
 function queryTest(callback) {
-	var inserts = [["name","value"], "parameters"]
-
-	database.query("SELECT ?? FROM ??", inserts, callback)
+	var inserts = [['name','value'], 'parameters']
+	database.query('SELECT ?? FROM ??', inserts, callback)
 }  
 
 queryTest(queryDebug)
+*/
