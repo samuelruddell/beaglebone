@@ -39,7 +39,9 @@ function queryDebug(data) {
 }
 
 function queryTest(callback) {
-	database.query("SELECT * FROM parameters", callback)
+	var inserts = [["name","value"], "parameters"]
+
+	database.query("SELECT ?? FROM ??", inserts, callback)
 }  
 
 queryTest(queryDebug)

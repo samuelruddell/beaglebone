@@ -34,19 +34,25 @@
 			})
 		},
 		// Query MySQL database
-		query: function (queryString, callback) {
-			var query   		= connection.query(queryString),
-			    queryData 		= []
+		query: function (queryString, inserts, callback) {
+			var query   		= connection.query(queryString, inserts),
+			    data 		= [],
+			    array
 
 			query
 			.on('error', function(err) {
 				console.log("Database: (%s)", err)
 			})
-			.on('result', function(data) {
-				queryData.push(data)
+			.on('result', function(rows) {
+				// extract and push values only
+				array = []
+				for (var key in rows) {
+					array.push(rows[key])
+				}
+				data.push(array)
 			})
 			.on('end', function() {
-				callback(queryData)
+				callback(data)
 			})	
 		}
 	}	
