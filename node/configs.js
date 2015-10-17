@@ -33,7 +33,8 @@
 	//
 	var sockets = {
 		// Poll interval in milliseconds.
-		pollingInterval : 500
+		pollingInterval : 500,
+		dataFormat : 2
 	}
 
 	//

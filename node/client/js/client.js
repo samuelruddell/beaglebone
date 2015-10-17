@@ -1,7 +1,7 @@
 /* client side javascript functions */
 var socket = io();
 
-socket.on('notification', function (data) {
+socket.on('data', function (data) {
   $.plot("#oscilloscope", [data.data], {
     series: {
     	shadowSize: 0 		// Drawing is faster without shadows
