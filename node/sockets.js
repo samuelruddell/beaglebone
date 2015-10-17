@@ -5,7 +5,8 @@
 	// Load socket specific configs.
 	var configs 		= require('./configs').sockets,
 	    database 		= require('./database'),
-	    connectionsArray	= []
+	    connectionsArray	= [],
+	    isPolling		= false;
 
 	// query MySQL database
 	var pollingLoop = function() {
@@ -23,31 +24,38 @@
 
 			// push data to sockets
 			connectionsArray.forEach(function(tmpSocket) {
-				tmpSocket.volatile.emit('notification', data)
+				tmpSocket.volatile.emit('notification', {data:data})
 			})
 
 		} else {
 			console.log('Sockets: No more socket connections')
+			isPolling = false;
 		}
 	}
-
 
 	// client has connected
 	var connect = function(socket) {
 		console.log('Sockets: Number of connections %s', connectionsArray.length)
 		if (!connectionsArray.length) {
-			pollingLoop()
+			if (!isPolling) {
+				pollingLoop()
+				isPolling = true;
+			}
 		}		
 
-		// client disconnected
-		socket.on('disconnect', function() {
+		// socket listeners
+		socket
+		.on('disconnect', function() {
 			var socketIndex = connectionsArray.indexOf(socket)
 			console.log('Sockets: socket %s disconnected', socketIndex)
 			if (~socketIndex) {
 			  	connectionsArray.splice(socketIndex, 1);
 			}
 		})
-		
+		.on('run', function() {
+			console.log('Sockets: Number of connections %s', connectionsArray.length)
+		})
+
 		console.log('Sockets: New socket connected')
 		connectionsArray.push(socket);
 	}

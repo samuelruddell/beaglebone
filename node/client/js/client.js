@@ -10,5 +10,5 @@ socket.on('notification', function (data) {
 });
 
 function run(){
-  socket.emit('connection');
+  socket.emit('run');
 }
