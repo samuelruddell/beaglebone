@@ -2,14 +2,14 @@
 // functions to handle sockets
 //
 (function () {
-	// Load PID specific configs.
+	// Load socket specific configs.
 	var configs 		= require('./configs').sockets,
-    	    database 		= require('./database'),
+	    database 		= require('./database'),
 	    connectionsArray	= []
 
 	// query MySQL database
 	var pollingLoop = function() {
-		var inserts = [['time', 'adc'], 'data'] // temporary *************************
+		var inserts = ([['time', 'adc'], 'data']); // temporary *************************
 		// query database
 		database.query('SELECT ?? FROM ??', inserts, updateSockets)
 	}
@@ -17,13 +17,15 @@
 	// push data to clients
 	var updateSockets = function(data) {
 		if(connectionsArray.length) {
+
 			// set timer to repeat function
 			pollingTimer = setTimeout(pollingLoop, configs.pollingInterval)
+
 			// push data to sockets
 			connectionsArray.forEach(function(tmpSocket) {
-				console.log('emitting socktes')
 				tmpSocket.volatile.emit('notification', data)
 			})
+
 		} else {
 			console.log('Sockets: No more socket connections')
 		}

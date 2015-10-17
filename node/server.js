@@ -7,7 +7,7 @@ var express 		= require('express'),
     app 		= express(),
     configs 		= require('./configs').server,
     router 		= require('./router'),
-    database 		= require('./database')
+    database 		= require('./database'),
     sockets 		= require('./sockets')
 
 // Attempt to open a connection to the configured database.
@@ -35,17 +35,13 @@ var server = app.listen(configs.port, function () {
 })
 
 // Utilise sockets to keep clients updated
-io = require('socket.io').listen(server)
+io = require('socket.io')(server)
 
-io.on('connection', function(client) {
-	sockets.connect(client) 
+io.on('connection', function(socket) {
+	sockets.connect(socket) 
 })
 
-
-
-
-
-/* test database querying
+/*
 function queryDebug(data) {
 	console.log(data)
 }
