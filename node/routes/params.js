@@ -13,9 +13,26 @@ module.exports = function (app) {
 		})
 	});
 
-	// Ask the server to update the current set of params.
+	// Ask the server to update the current set of parameters.
 	app.post("/params/", function (req, res) {
-		// TODO:
+		var jsonString = ''
+
+		req.on('data', function (data) {
+			jsonString += data
+		});
+
+		req.on('end', function() {
+			var jsonObj = JSON.parse(jsonString)
+			console.log(jsonObj)
+		})
+
+		var queryString = "UPDATE ?? SET value = ? WHERE name = ?";
+		var inserts = ['parameters', '0', 'IRESET']
+		database.query(queryString, inserts, function() {})
+
+		res.send('hi\n')
+		//var inserts = [1,'TEST']
+		//database.query('UPDATE parameters SET value = ?? WHERE name = ??', inserts)
 	});
 
 };
