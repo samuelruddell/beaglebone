@@ -3,19 +3,14 @@
 //
 // Routes for working with experiment parameters. Pass in the express app instance.
 //
-module.exports = function (app) {
-	var database = require('../database')
+var database = require('../database')
 
-	// Ask the server for the current set of parameters.
-	app.get("/params/", function (req, res) {
-		database.query('SELECT ?? FROM ??', [['name','value'],'parameters'], function(data) {
-			res.send(data)
-		})
-	});
+module.exports = function (app) {
 
 	// Ask the server to update the current set of parameters.
 	app.post("/params/", function (req, res) {
 		var jsonString = ''
+		var inserts
 
 		req.on('data', function (data) {
 			jsonString += data
@@ -23,16 +18,23 @@ module.exports = function (app) {
 
 		req.on('end', function() {
 			var jsonObj = JSON.parse(jsonString)
-			console.log(jsonObj)
-		})
+			inserts = [jsonObj.value, jsonObj.name]
 
-		var queryString = "UPDATE ?? SET value = ? WHERE name = ?";
-		var inserts = ['parameters', '0', 'IRESET']
-		database.query(queryString, inserts, function() {})
+			if (inserts[0] && inserts[1]) {		// ensure values not undefined
+				console.log(inserts)
+				database.query("UPDATE parameters SET value = ? WHERE name = ?", inserts)
+			}
 
-		res.send('hi\n')
-		//var inserts = [1,'TEST']
-		//database.query('UPDATE parameters SET value = ?? WHERE name = ??', inserts)
+			res.redirect('/')
+		});
 	});
 
+	// Ask the server for the current set of parameters.
+	app.get("/params/", function(req, res) {
+		database.query('SELECT ?? FROM ??', [['name','value'],'parameters'], function(data) {
+			res.send(data)
+		})
+	})	
 };
+
+// send parameters to client

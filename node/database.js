@@ -53,7 +53,7 @@
 				data.push(array)
 			})
 			.on('end', function() {
-				callback(data)
+				if (callback) callback(data);
 			})	
 		}
 	}	
