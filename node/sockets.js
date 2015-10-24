@@ -31,12 +31,24 @@
 	var updateSockets = function(data) {
 		if(connectionsArray.length) {
 
+			// format data as array for flot
+			var flotData = []
+			var row, array
+			for (var rows in data) {
+				row = data[rows]
+			    	array = []
+				for (var key in row) {
+					array.push(row[key])
+				}
+				flotData.push(array)
+			}
+
 			// set timer to repeat function
 			pollingTimer = setTimeout(queryData, configs.pollingInterval)
 
 			// push data to sockets
 			connectionsArray.forEach(function(tmpSocket) {
-				tmpSocket.volatile.emit('data', {data:data})
+				tmpSocket.volatile.emit('data', {data:flotData})
 			})
 
 		} else {

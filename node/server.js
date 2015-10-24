@@ -40,16 +40,3 @@ io = require('socket.io')(server)
 io.on('connection', function(socket) {
 	sockets.connect(socket) 
 })
-
-/*
-function queryDebug(data) {
-	console.log(data)
-}
-
-function queryTest(callback) {
-	var inserts = [['name','value'], 'parameters']
-	database.query('SELECT ?? FROM ??', inserts, callback)
-}  
-
-queryTest(queryDebug)
-*/

@@ -47,12 +47,7 @@
 				console.log('Database: (%s)', err)
 			})
 			.on('result', function(rows) {
-				// extract and push values only
-				array = []
-				for (var key in rows) {
-					array.push(rows[key])
-				}
-				data.push(array)
+				data.push(rows)
 			})
 			.on('end', function() {
 				if (callback) callback(data);

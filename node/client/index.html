@@ -76,6 +76,107 @@
 	        </div>
 	      </form>
 	    </div>
+
+	    <!-- PID control tab -->
+	    <div id="pidControl" class="tab-pane fade">
+	      <h3><!--    --></h3>
+	      <form class="form-inline" autocomplete="off">
+		<div class="form-group">
+
+		  <!-- BEGIN parameter number fields -->
+		  <label for="RUN" class="col-xs-4 control-label">run</label>
+		  <div class="col-xs-8 input-group">
+		    <input type="number" class="form-control" id="RUN" placeholder="">
+		  </div>
+		  <label for="OPENCLOSE" class="col-xs-4 control-label">closed/open</label>
+		  <div class="col-xs-8 input-group">
+		    <input type="number" class="form-control" id="OPENCLOSE" placeholder="">
+		  </div>
+		  <label for="XLOCK" class="col-xs-4 control-label">xlock</label>
+		  <div class="col-xs-8 input-group">
+		    <input type="number" class="form-control" id="XLOCK" placeholder="">
+		  </div>
+		  <label for="YLOCK" class="col-xs-4 control-label">ylock</label>
+		  <div class="col-xs-8 input-group">
+		    <input type="number" class="form-control" id="YLOCK" placeholder="">
+		  </div>
+		  <label for="TIMEX_TIMEY_XY" class="col-xs-4 control-label">oscilloscope mode</label>
+		  <div class="col-xs-8 input-group">
+		    <input type="number" class="form-control" id="TIMEX_TIMEY_XY" placeholder="">
+		  </div>
+		  <label for="ADC_CLKDIV" class="col-xs-4 control-label">ADC clkdiv</label>
+		  <div class="col-xs-8 input-group">
+		    <input type="number" class="form-control" id="ADC_CLKDIV" placeholder="">
+		  </div>
+		  <label for="ADC_AVERAGE" class="col-xs-4 control-label">ADC average</label>
+		  <div class="col-xs-8 input-group">
+		    <input type="number" class="form-control" id="ADC_AVERAGE" placeholder="">
+		  </div>
+		  <label for="ADC_OPENDELAY" class="col-xs-4 control-label">ADC open delay</label>
+		  <div class="col-xs-8 input-group">
+		    <input type="number" class="form-control" id="ADC_OPENDELAY" placeholder="">
+		  </div>
+		  <label for="ADC_CLOSEDDELAY" class="col-xs-4 control-label">ADC closed delay</label>
+		  <div class="col-xs-8 input-group">
+		    <input type="number" class="form-control" id="ADC_CLOSEDDELAY" placeholder="">
+		  </div>
+		  <label for="OPENAMPL" class="col-xs-4 control-label">open loop amplitude</label>
+		  <div class="col-xs-8 input-group">
+		    <input type="number" class="form-control" id="OPENAMPL" placeholder="">
+		  </div>
+		  <label for="SCANPOINT" class="col-xs-4 control-label">open loop scan point</label>
+		  <div class="col-xs-8 input-group">
+		    <input type="number" class="form-control" id="SCANPOINT" placeholder="">
+		  </div>
+		  <label for="PGAIN" class="col-xs-4 control-label">proportional</label>
+		  <div class="col-xs-8 input-group">
+		    <input type="number" class="form-control" id="PGAIN" placeholder="">
+		  </div>
+		  <label for="IGAIN" class="col-xs-4 control-label">integral</label>
+		  <div class="col-xs-8 input-group">
+		    <input type="number" class="form-control" id="IGAIN" placeholder="">
+		  </div>
+		  <label for="DGAIN" class="col-xs-4 control-label">derivative</label>
+		  <div class="col-xs-8 input-group">
+		    <input type="number" class="form-control" id="DGAIN" placeholder="">
+		  </div>
+		  <label for="IRESET" class="col-xs-4 control-label">integrator reset</label>
+		  <div class="col-xs-8 input-group">
+		    <input type="number" class="form-control" id="IRESET" placeholder="">
+		  </div>
+		  <label for="AUTO_IRESET" class="col-xs-4 control-label">automatic integrator reset</label>
+		  <div class="col-xs-8 input-group">
+		    <input type="number" class="form-control" id="AUTO_IRESET" placeholder="">
+		  </div>
+		  <label for="POS_INT_OVERFLOW" class="col-xs-4 control-label">auto integrator overflow (pos)</label>
+		  <div class="col-xs-8 input-group">
+		    <input type="number" class="form-control" id="POS_INT_OVERFLOW" placeholder="">
+		  </div>
+		  <label for="NEG_INT_OVERFLOW" class="col-xs-4 control-label">auto integrator underflow (neg)</label>
+		  <div class="col-xs-8 input-group">
+		    <input type="number" class="form-control" id="NEG_INT_OVERFLOW" placeholder="">
+		  </div>
+		  <label for="LOCKSLOPE" class="col-xs-4 control-label">lock slope</label>
+		  <div class="col-xs-8 input-group">
+		    <input type="number" class="form-control" id="LOCKSLOPE" placeholder="">
+		  </div>
+		  <label for="AUTOLOCK_EN" class="col-xs-4 control-label">autolock enable</label>
+		  <div class="col-xs-8 input-group">
+		    <input type="number" class="form-control" id="AUTOLOCK_EN" placeholder="">
+		  </div>
+		  <label for="AUTOLOCK_LT_GT" class="col-xs-4 control-label">autolock value</label>
+		  <div class="col-xs-8 input-group">
+		    <input type="number" class="form-control" id="AUTOLOCK_LT_GT" placeholder="">
+		  </div>
+		  <label for="AUTOLOCK_POINT" class="col-xs-4 control-label">autolock point</label>
+		  <div class="col-xs-8 input-group">
+		    <input type="number" class="form-control" id="AUTOLOCK_POINT" placeholder="">
+		  </div>
+		  <!-- END parameter number fields -->
+
+		</div>
+	      </form>
+	    </div> 
 	  </div>
 
 	  <!-- bootstrap navbar -->
@@ -84,7 +185,7 @@
 	      <div class="navbar-header">
 		<a class="navbar-brand">BeagleBone Black Oscilloscope</a>
 		<button onclick="run()" class="btn btn-primary navbar-btn" aria-expanded="false">RUN</button>
-		<button onclick="submitForm()" class="btn btn-default navbar-btn" aria-expanded="false">SUBMIT</button>
+		<button onclick="getParams()" class="btn btn-default navbar-btn" aria-expanded="false">get parameters</button>
 
 	      </div>
 	    </div>
