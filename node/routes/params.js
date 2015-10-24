@@ -1,8 +1,9 @@
 //
 // routes/params.js
 //
-// Routes for working with experiment parameters. Pass in the express app instance.
+// Routes for working with PID parameters. Pass in the express app instance.
 //
+
 var database = require('../database')
 
 module.exports = function (app) {
@@ -10,22 +11,26 @@ module.exports = function (app) {
 	// Ask the server to update the current set of parameters.
 	app.post("/params/", function (req, res) {
 		var jsonString = ''
-		var inserts
 
 		req.on('data', function (data) {
 			jsonString += data
 		});
 
 		req.on('end', function() {
-			var jsonObj = JSON.parse(jsonString)
-			inserts = [jsonObj.value, jsonObj.name]
+			try {						// handle invalid JSON from client
+				var jsonObj = JSON.parse(jsonString)
+				var inserts = [jsonObj.value, jsonObj.name]
 
-			if (inserts[0] && inserts[1]) {		// ensure values not undefined
-				console.log(inserts)
-				database.query("UPDATE parameters SET value = ? WHERE name = ?", inserts)
+				if (inserts[0] && inserts[1]) {		// ensure values not undefined
+					database.query('UPDATE parameters SET value = ? WHERE name = ?', inserts)
+					res.sendStatus(200)		// OK
+				} else {
+					res.sendStatus(400)		// Bad Request
+				}
+
+			} catch (err) {					// JSON failed to parse
+				res.sendStatus(400)			// Bad Request
 			}
-
-			res.redirect('/')
 		});
 	});
 
@@ -36,5 +41,3 @@ module.exports = function (app) {
 		})
 	})	
 };
-
-// send parameters to client

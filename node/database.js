@@ -1,5 +1,7 @@
 //
+// database.js
 //
+// handles interaction with MySQL database
 //
 (function () {
 	// Load the MySQL module.
