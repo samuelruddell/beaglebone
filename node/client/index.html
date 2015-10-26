@@ -86,11 +86,19 @@
 		  <!-- BEGIN parameter number fields -->
 		  <label for="RUN" class="col-xs-4 control-label">run</label>
 		  <div class="col-xs-8 input-group">
-		    <input type="number" class="form-control" id="RUN" placeholder="">
+		    <input type="checkbox" value="" id="RUN">
 		  </div>
 		  <label for="OPENCLOSE" class="col-xs-4 control-label">closed/open</label>
 		  <div class="col-xs-8 input-group">
-		    <input type="number" class="form-control" id="OPENCLOSE" placeholder="">
+		    <input type="checkbox" value="" id="OPENCLOSE">
+		  </div>
+		  <label for="IRESET" class="col-xs-4 control-label">integrator reset</label>
+		  <div class="col-xs-8 input-group">
+		    <input type="checkbox" value="" id="IRESET">
+		  </div>
+		  <label for="LOCKSLOPE" class="col-xs-4 control-label">lock slope</label>
+		  <div class="col-xs-8 input-group">
+		    <input type="checkbox" value="" id="LOCKSLOPE">
 		  </div>
 		  <label for="XLOCK" class="col-xs-4 control-label">xlock</label>
 		  <div class="col-xs-8 input-group">
@@ -140,10 +148,6 @@
 		  <div class="col-xs-8 input-group">
 		    <input type="number" class="form-control" id="DGAIN" placeholder="">
 		  </div>
-		  <label for="IRESET" class="col-xs-4 control-label">integrator reset</label>
-		  <div class="col-xs-8 input-group">
-		    <input type="number" class="form-control" id="IRESET" placeholder="">
-		  </div>
 		  <label for="AUTO_IRESET" class="col-xs-4 control-label">automatic integrator reset</label>
 		  <div class="col-xs-8 input-group">
 		    <input type="number" class="form-control" id="AUTO_IRESET" placeholder="">
@@ -155,10 +159,6 @@
 		  <label for="NEG_INT_OVERFLOW" class="col-xs-4 control-label">auto integrator underflow (neg)</label>
 		  <div class="col-xs-8 input-group">
 		    <input type="number" class="form-control" id="NEG_INT_OVERFLOW" placeholder="">
-		  </div>
-		  <label for="LOCKSLOPE" class="col-xs-4 control-label">lock slope</label>
-		  <div class="col-xs-8 input-group">
-		    <input type="number" class="form-control" id="LOCKSLOPE" placeholder="">
 		  </div>
 		  <label for="AUTOLOCK_EN" class="col-xs-4 control-label">autolock enable</label>
 		  <div class="col-xs-8 input-group">
@@ -172,7 +172,6 @@
 		  <div class="col-xs-8 input-group">
 		    <input type="number" class="form-control" id="AUTOLOCK_POINT" placeholder="">
 		  </div>
-		  <h3></h3>
 		  <!-- END parameter number fields -->
 
 		</div>

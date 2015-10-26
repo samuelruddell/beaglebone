@@ -6,8 +6,19 @@ $(document).ready(function() {
   // fill all fields from database
   getParams();
 
+  // listen for checkbox changes and POST
+  $('#pidControl :input[type="checkbox"]').change(function () {
+    if(this.checked) {
+      var param = JSON.stringify({name: $(this).attr('id'), value: "1"})
+    } else {
+      var param = JSON.stringify({name: $(this).attr('id'), value: "0"})
+    }
+    // POST data, GET parameters as callback	
+    $.post("/params/", param, getParams) 
+  })
+
   // listen for field changes and POST
-  $('#pidControl :input').change(function () {
+  $('#pidControl :input[type="number"]').change(function () {
     var param = JSON.stringify({name: $(this).attr('id'), value: $(this).val()})
     // POST data, GET parameters as callback	
     $.post("/params/", param, getParams) 
@@ -47,7 +58,12 @@ function getParams() {
     for (var obj in data) {
       try {
         // insert values into form
-        document.getElementById(data[obj].name).value = data[obj].value;
+	var element = document.getElementById(data[obj].name)
+	if(element.type == 'checkbox') {
+	  element.checked = data[obj].value	// checkbox
+	} else {
+      	  element.value = data[obj].value	// number field
+	} 
       } catch (err) {
         // getElementById(...) is null
       }
