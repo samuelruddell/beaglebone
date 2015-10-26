@@ -19,9 +19,22 @@ socket.on('data', function (data) {
   $.plot("#oscilloscope", [data.data], {
     series: {
       shadowSize: 0     // Drawing is faster without shadows
+    },
+    grid: {
+      clickable: true	// Allow mouse click to determine lock point
     }
   });
 });
+
+// handle oscilloscope mouse click
+$(function() {
+  $("#oscilloscope").bind("plotclick", function (event, pos, item) {
+    document.getElementById('XLOCK').value = pos.x.toFixed(0);
+    $('#XLOCK').trigger('change')
+    document.getElementById('YLOCK').value = pos.y.toFixed(0);
+    $('#YLOCK').trigger('change')
+  });
+})
 
 // only to test for now
 function run()  {
