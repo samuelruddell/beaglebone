@@ -2,21 +2,22 @@
   MOV r20, ADC_                 // ADC address
   MOV r21, ADC_ | FIFO          // FIFO0 address
   MOV r1, 0x00010000            // PRUSS0_SHARED_MEMORY
+
 ADC_SETUP:
   // edit CTRL register
   MOV r2, 0x4                   // Make step configuration registers writable, disable TSC_ADC_SS
   SBBO r2, r20, CTRL, 4         // Store configuration to ADC_CTRL register
 
-ADC_CHECK:                      // ensure ADC is disabled
+ADC_CHECK:                      // Ensure ADC is disabled
   LBBO r2, r20, ADCSTAT, 4      // Load in ADC status
-  AND r2, r2, 0x1f              // bitmask for step_id status  
-  QBNE ADC_CHECK, r2, 0x10      // wait until ADC idling before editing step registers
+  AND r2, r2, 0x1f              // Bitmask for step_id status  
+  QBNE ADC_CHECK, r2, 0x10      // Wait until ADC idling before editing step registers
 
-FIFO_EMPTY:
+EMPTY_FIFO:
   LBBO r2, r20, FIFOCOUNT, 4    // check for words in FIFO0
   QBEQ FIFO_IS_EMPTY, r2, 0     // skip if FIFO is already empty
   LBBO r9, r21, 0, 4            // load 4 bytes from FIFO into r9
-  QBA FIFO_EMPTY
+  QBA EMPTY_FIFO
   FIFO_IS_EMPTY:
 
   // edit CLKDIV register
@@ -32,19 +33,18 @@ FIFO_EMPTY:
   SBBO r2, r20, STEPCONFIG1, 4  // Store configuration to ADC_STEPCONFIG1 register
 
 ADC_OPENDELAY:                  // Step delay configuration 1 for open loop
-  QBBC ADC_CLOSEDDELAY, r4.t0   // use separate delay for closed loop
+  QBBC ADC_CLOSEDDELAY, r4.t0   // use different delay value for closed loop
   LBBO r2, r1, 0x28, 4          // number of ADC clock cycles to wait after applying STEPCONFIG1 
-  MOV r1, 0x3ffff               // bitmask for bits[17:0]
-  AND r2, r2, r1                // apply bitmask
-  SBBO r2, r20, STEPDELAY1, 4   // bits[17:0]
-  QBA ADC_ENABLE
+  QBA ADC_DELAY_SETUP
 
 ADC_CLOSEDDELAY:                // Step delay configuration 1 for closed loop
   LBBO r2, r1, 0x2c, 4          // number of ADC clock cycles to wait after applying STEPCONFIG1 
+
+ADC_DELAY_SETUP:
   MOV r1, 0x3ffff               // bitmask for bits[17:0]
   AND r2, r2, r1                // apply bitmask
   SBBO r2, r20, STEPDELAY1, 4   // bits[17:0]
-    
+
 ADC_ENABLE:
   // enable ADC STEPCONFIG 1
   MOV r2, 0x2                   // Enable step 1 only
