@@ -153,61 +153,82 @@ unsigned int mysqlGetParameters(MYSQL *conn, unsigned int *pruSharedDataMemory_i
 	while ((row = mysql_fetch_row(result))){
 		mem_offset = atoi(row[0]);
 		mem_value = atoi(row[1]);
-		if (mem_offset==0){
-			runScope = mem_value;   // RUN
+		switch (mem_offset) {
+
+			// run status
+			case 0 :
+				runScope = mem_value;   // RUN
+				break;
+
 			// booleans
-		} else if (mem_offset==1){
-			if (mem_value==1){
-				pruBooleans |= 0x1;     // open/closed loop
-			}
-		} else if (mem_offset==19){
-			if (mem_value==1){
-				pruBooleans |= 0x2;     // integrator reset
-			}
-		} else if (mem_offset==20){
-			if (mem_value==1){
-				pruBooleans |= 0x4;     // auto integrator reset
-			}
-		} else if (mem_offset==23){
-			if (mem_value==1){
-				pruBooleans |= 0x8;     // lock slope
-			}
-		} else if (mem_offset==24){
-			if (mem_value==1){
-				pruBooleans |= 0x10;     // autolock enable
-			}
-		} else if (mem_offset==25){
-			if (mem_value==1){
-				pruBooleans |= 0x20;     // autolock above (1) / below (0)
-			}
+			case 1 :
+				if (mem_value==1){
+					pruBooleans |= 0x1;     		// open/closed loop
+				}
+				break;
+			case 19 :
+				if (mem_value==1){
+					pruBooleans |= 0x2;     		// integrator reset
+				}
+				break;
+			case 20 :
+				if (mem_value==1){
+					pruBooleans |= 0x4;     		// auto integrator reset
+				}
+				break;
+			case 23 :
+				if (mem_value==1){
+					pruBooleans |= 0x8;     		// lock slope
+				}
+				break;
+			case 24 :
+				if (mem_value==1){
+					pruBooleans |= 0x10;     		// autolock enable
+				}
+				break;
+			case 25 :
+				if (mem_value==1){
+					pruBooleans |= 0x20;     		// autolock above (1) / below (0)
+				}
+				break;
+
 			// pack XLOCK and YLOCK
-		} else if (mem_offset==2){
-			xlock_ylock |= ((mem_value & 0xffff) << 16);    // XLOCK
-		} else if (mem_offset==3){
-			xlock_ylock |= (mem_value & 0x0fff);            // YLOCK
-			// pack SCANPOINT and OPENAMPL
-		} else if (mem_offset==14){
-			open_point_ampl |= ((mem_value & 0xffff) << 16);// SCANPOINT
-		} else if (mem_offset==13){
-			open_point_ampl |= (mem_value & 0xffff);        // OPENAMPL
+			case 2 :	
+				xlock_ylock |= ((mem_value & 0xffff) << 16);    // XLOCK
+				break;
+			case 3 :
+				xlock_ylock |= (mem_value & 0x0fff);            // YLOCK
+				break;
+
+			// pack SCANPOINT and OPENAMPL:
+			case 13 :	
+				open_point_ampl |= (mem_value & 0xffff);        // OPENAMPL
+				break;
+			case 14 : 			
+				open_point_ampl |= ((mem_value & 0xffff) << 16);// SCANPOINT
+				break;
+
 			// pack AUTO INTEGRATOR OVERFLOW and UNDERFLOW
-		} else if (mem_offset==21){
-			ireset_pos_neg |= ((mem_value & 0xffff) << 16);  // POSITIVE OVERFLOW
-		} else if (mem_offset==22){
-			ireset_pos_neg |= (mem_value & 0xffff);          // NEGATIVE UNDERFLOW
+			case 21 : 	
+				ireset_pos_neg |= ((mem_value & 0xffff) << 16); // POSITIVE OVERFLOW
+				break;
+			case 22 :
+				ireset_pos_neg |= (mem_value & 0xffff);         // NEGATIVE UNDERFLOW
+				break;
+
 			// write memory normally
-		} else {
-			*(pruSharedDataMemory_int + mem_offset) = mem_value;
+			default : 			
+				*(pruSharedDataMemory_int + mem_offset) = mem_value;
 		}
 	}
 
-        // store packed data to pru memory
+	// store packed data to pru memory
 	*(pruSharedDataMemory_int + 1) = pruBooleans;           
 	*(pruSharedDataMemory_int + 2) = xlock_ylock;          
 	*(pruSharedDataMemory_int + 13) = open_point_ampl;    
 	*(pruSharedDataMemory_int + 21) = ireset_pos_neg;    
 
-        // clean up and return runScope
+	// clean up and return runScope
 	mysql_free_result(result);	
 	return runScope;
 }
