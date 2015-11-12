@@ -18,6 +18,10 @@
 #define PRU_1      	1
 
 /* gpio memory addresses */
+#define CM_PER		0x44e00000
+#define GPIO1_CLKCTRL 	0xac
+#define GPIO2_CLKCTRL 	0xb0
+#define GPIO3_CLKCTRL 	0xb4
 #define GPIO0 		0x44e07000
 #define GPIO1 		0x4804c000
 #define GPIO2 		0x481ac000
@@ -43,10 +47,27 @@ int main (int argc, char **argv)
 
 	unsigned int runScope = 1;
 
+	/* open memory for writing gpio */
+	int fd = open("/dev/mem", O_RDWR);
+
 	/* memory map gpio addresses */
 	struct GpioAddr gpio;
 
-	int fd = open("/dev/mem", O_RDWR);
+	/* enable gpio clocks */
+	unsigned int * clkAddr;
+	void * clk_ctrl;
+
+	clk_ctrl = mmap(0, 4096, PROT_READ | PROT_WRITE, MAP_SHARED, fd, CM_PER);
+
+	clkAddr = clk_ctrl + GPIO1_CLKCTRL;
+	*clkAddr = 0x2;
+
+	clkAddr = clk_ctrl + GPIO2_CLKCTRL;
+	*clkAddr = 0x2;
+
+	clkAddr = clk_ctrl + GPIO3_CLKCTRL;
+	*clkAddr = 0x2;
+
 	gpio.gpio0_addr = mmap(0, GPIO_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, GPIO0);
 	gpio.gpio1_addr = mmap(0, GPIO_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, GPIO1);
 	gpio.gpio2_addr = mmap(0, GPIO_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, GPIO2);
