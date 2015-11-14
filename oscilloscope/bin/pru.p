@@ -57,6 +57,7 @@
       QBBC SEMICLOSEDLOOP, r4.t0        // do semi-closed / closed loop if bit[0] (open/closed loop) clear
       QBBC OPENLOOP, r4.t4              // if no autolock, skip to open loop
       QBBS CLOSEDLOOP, r4.t18           // if autolock enabled && locked status: do closed loop
+
     AUTOLOCK_TEST:
       QBBC AUTOLOCK_BELOW, r4.t5        // test for autolock below
       AUTOLOCK_ABOVE:                   // do closed loop if ADC reading >= autolock point
@@ -75,7 +76,7 @@
 /* OPEN LOOP */
     OPENLOOP:
       CLR r4.t18                        // ensure internal autolock status clear (perform open loop)
-      MOV r2, r10.w2                    // used to test whether amplitude reached below
+      MOV r2, r10.w2                    // open loop scan point for condition checking below
       QBBC SCANDOWN, r4.t16             // scan down instead
 
       SCANUP:
@@ -83,7 +84,7 @@
         QBLE TOGGLE_DIRECTION, r7, r2   // toggle direction if upper amplitude reached
         MOV r2, 0xffff
         QBEQ TOGGLE_DIRECTION, r7, r2   // toggle direction if max amplitude reached
-        ADD r7, r7, 1                   // increase DAC output
+        ADD r7, r7, 1                   // else increase DAC output
         QBA ENDLOOP        
 
       SCANDOWN:
@@ -92,7 +93,7 @@
         MOV r2, 0x0                     // if negative set lower amplitude as zero 
         SCANDOWN_CONT:
           QBGE TOGGLE_DIRECTION, r7, r2 // toggle direction if lower amplitude reached
-          SUB r7, r7, 1                 // decrease DAC output
+          SUB r7, r7, 1                 // else decrease DAC output
           QBA ENDLOOP        
 
       TOGGLE_DIRECTION:
@@ -196,8 +197,8 @@
     ENDLOOP:
       SPI_BUILDWORD:                    // prepare data for sending to DAC
 
-      SPI_CHECK:                        // Check transmitter register status
-        LBBO r2, r22, SPI_CH1STAT, 4
+      SPI_CHECK:                        
+        LBBO r2, r22, SPI_CH1STAT, 4    // Check transmitter register status
         QBBC SPI_END, r2.t1             // skip if still transmitting previous data
 
       SPI_SEND:
@@ -221,7 +222,7 @@
     CLEAR_ARM_INTERRUPT:
       MOV r2, 1<<18                     // write 1 to clear event
       MOV r1, SECR0                     // System Event Status Enable/Clear register
-      SBCO r2, C0, r1, 4                // C0 is interrupt controller
+      SBCO r2, c0, r1, 4                // c0 is interrupt controller
       QBA INT_CHECK
 
 /* END OF LOOP AND INTERRUPT OUT HANDLING */
@@ -231,13 +232,13 @@
     INT_CHECK:
       QBNE WAIT, r3.w2, r3.w0           // check number of samples taken
     
-    INTERRUPT:                          // memory full
+    INTERRUPT:                          // when memory full
       MOV r31.b0, PRU_INTERRUPT | PRU_EVTOUT_0
     
       CLR r25, 3                        // clear bit 3 to disable CYCLE
-      SBCO r25, C28, 0, 4               // store CYCLE settings
+      SBCO r25, c28, 0, 4               // store CYCLE settings
       MOV r2, 0x0                       // 0x0 to reset CYCLE count to zero
-      SBCO r2, C28, CYCLE, 4            // clear CYCLE counter
+      SBCO r2, c28, CYCLE, 4            // clear CYCLE counter
     
       MOV r3.w0, 0                      // start from 0th memory address
       CLR r4.t31                        // disable writing
@@ -253,9 +254,10 @@
       HALT
 
 /* SUBROUTINES UTILISING JAL */
-
+  /* LOAD PARAMETERS */
     LOAD_PARAMETERS:
       MOV r1, 0x00010000                // PRUSS0_SHARED_MEMORY
+
       LBBO r4.w0, r1, BOOLEANS, 2       // load externally set booleans into r4.w0
                                         // bit[0]: OPEN / CLOSED LOOP
                                         // bit[1]: INTEGRATOR RESET
@@ -277,12 +279,15 @@
       LBBO r13, r1, IGAIN, 4            // load IGAIN
       LBBO r14, r1, DGAIN, 4            // load DGAIN
       LBBO r24, r1, IRESET_POS_NEG, 4   // load INTEGRATOR AUTO OVERFLOW AND UNDERFLOW VALUES
+
       JMP r23.w0                        // RETURN
 
+  /* SETUP SPI*/
     SETUP_SPI:
       #include "setup_spi.p"            // setup SPI for data out to DAC
       JMP r23.w0
 
+  /* SETUP ADC*/
     SETUP_ADC:
       #include "setup_adc.p"            // ADC definitions, setup and start ADC
       JMP r23.w0
