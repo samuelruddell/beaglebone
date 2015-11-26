@@ -41,6 +41,12 @@
 #define SPI_SYSSTATUS           0x14
 #define SPI_IRQENABLE           0x1c
 #define SPI_MODULCTRL           0x28
+
+#define SPI_CH0CONF             0x2c
+#define SPI_CH0STAT             0x30
+#define SPI_CH0CTRL             0x34
+#define SPI_TX0                 0x38
+
 #define SPI_CH1CONF             0x40
 #define SPI_CH1STAT             0x44
 #define SPI_CH1CTRL             0x48

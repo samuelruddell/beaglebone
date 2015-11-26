@@ -195,14 +195,16 @@
 
 /* SPI SEND DATA TO DAC */
     ENDLOOP:
-      SPI_BUILDWORD:                    // prepare data for sending to DAC
+      SPI_BUILDWORD:                    // prepare data for sending to DAC MAX5216      
+        LSL r2, r7.w0, 6
+        SET r2.t22
 
       SPI_CHECK:                        
-        LBBO r2, r22, SPI_CH1STAT, 4    // Check transmitter register status
+        LBBO r2, r22, SPI_CH0STAT, 4    // Check transmitter register status
         QBBC SPI_END, r2.t1             // skip if still transmitting previous data
 
       SPI_SEND:
-        SBBO r7, r22, SPI_TX1, 4        // word to transmit 
+        SBBO r7, r22, SPI_TX0, 4        // word to transmit 
       SPI_END:
 
 /* STORING DATA TO MEMORY AND INTERRUPT IN HANDLING */
