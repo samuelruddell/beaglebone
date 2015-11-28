@@ -33,18 +33,26 @@
 	      <h3><!--    --></h3>
 	      <form class="form-inline" autocomplete="off">
 		<div class="form-group">
-		  <label for="openAmpl" class="col-xs-4 control-label">Amplitude</label>
-        	  <div class="col-xs-8 input-group">
-		    <input type="number" class="form-control" id="openAmpl" step="1" min="0" max="65536" placeholder="">
-		    <div class="input-group-addon">V</div>
-	          </div>
-		  <h3><!--    --></h3>
-		  <label for="openFreq" class="col-xs-4 control-label">Frequency</label>
-        	  <div class="col-xs-8 input-group">
-		    <input type="number" class="form-control" id="openFreq" placeholder="">
-		    <div class="input-group-addon">Hz</div>
+
+		  <div class="col-xs-4">
+		    <label for="OPENAMPL" class="control-label">open loop amplitude</label>
 		  </div>
-    	        </div>
+		  <div class="col-xs-8">
+		    <div class="input-group">
+		      <input type="number" class="form-control" id="OPENAMPL" placeholder="">
+		    </div>
+		  </div>
+
+		  <div class="col-xs-4">
+		    <label for="SCANPOINT" class="control-label">open loop scan point</label>
+		  </div>
+		  <div class="col-xs-8">
+		    <div class="input-group">
+		      <input type="number" class="form-control" id="SCANPOINT" placeholder="">
+		    </div>
+		  </div>
+
+	        </div>
 	      </form>
 	    </div>
 
@@ -53,26 +61,97 @@
 	      <h3><!--    --></h3>
 	      <form class="form-inline" autocomplete="off">
 		<div class="form-group">
-		  <label for="closedFreq" class="col-xs-4 control-label">Frequency</label>
-		  <div class="col-xs-8 input-group">
-		    <input type="number" class="form-control" id="closedFreq" placeholder="">
-		    <div class="input-group-addon">Hz</div>
+
+		  <div class="col-xs-4">
+		    <label for="IRESET" class="control-label">integrator reset</label>
 		  </div>
-		  <h3><!--    --></h3>
-		  <label for="closedkP" class="col-xs-4 control-label">Proportional</label>
-		  <div class="col-xs-8 input-group">
-		    <input type="number" class="form-control" id="closedkP" placeholder="">
+		  <div class="col-xs-8">
+		    <div class="input-group">
+		      <input type="checkbox" value="" id="IRESET">
+		    </div>
 		  </div>
-		  <h3><!--    --></h3>
-		  <label for="closedkI" class="col-xs-4 control-label">Integral</label>
-		  <div class="col-xs-8 input-group">
-		    <input type="number" class="form-control" id="closedkI" placeholder="">
+
+		  <div class="col-xs-4">
+		    <label for="LOCKSLOPE" class="control-label">lock slope</label>
 		  </div>
-		  <h3><!--    --></h3>
-		  <label for="closedkD" class="col-xs-4 control-label">Derivative</label>
-		  <div class="col-xs-8 input-group">
-		    <input type="number" class="form-control" id="closedkD" placeholder="">
+		  <div class="col-xs-8">
+		    <div class="input-group">
+		      <input type="checkbox" value="" id="LOCKSLOPE">
+		    </div>
 		  </div>
+
+		  <div class="col-xs-4">
+		    <label for="XLOCK" class="control-label">xlock</label>
+		  </div>
+		  <div class="col-xs-8">
+		    <div class="input-group">
+		      <input type="number" class="form-control" id="XLOCK" placeholder="">
+		    </div>
+		  </div>
+
+		  <div class="col-xs-4">
+		    <label for="YLOCK" class="control-label">ylock</label>
+		  </div>
+		  <div class="col-xs-8">
+		    <div class="input-group">
+		      <input type="number" class="form-control" id="YLOCK" placeholder="">
+		    </div>
+		  </div>
+
+		  <div class="col-xs-4">
+		    <label for="PGAIN" class="control-label">proportional</label>
+		  </div>
+		  <div class="col-xs-8">
+		    <div class="input-group">
+		      <input type="number" class="form-control" id="PGAIN" placeholder="">
+		    </div>
+		  </div>
+
+		  <div class="col-xs-4">
+		    <label for="IGAIN" class="control-label">integral</label>
+		  </div>
+		  <div class="col-xs-8">
+		    <div class="input-group">
+		      <input type="number" class="form-control" id="IGAIN" placeholder="">
+		    </div>
+		  </div>
+
+		  <div class="col-xs-4">
+		    <label for="DGAIN" class="control-label">derivative</label>
+		  </div>
+		  <div class="col-xs-8">
+		    <div class="input-group">
+		      <input type="number" class="form-control" id="DGAIN" placeholder="">
+		    </div>
+		  </div>
+
+		  <div class="col-xs-4">
+		    <label for="AUTO_IRESET" class="control-label">automatic integrator reset</label>
+		  </div>
+		  <div class="col-xs-8">
+		    <div class="input-group">
+		      <input type="number" class="form-control" id="AUTO_IRESET" placeholder="">
+		    </div>
+		  </div>
+
+		  <div class="col-xs-4">
+		    <label for="POS_INT_OVERFLOW" class="control-label">auto integrator overflow (pos)</label>
+		  </div>
+		  <div class="col-xs-8">
+		    <div class="input-group">
+		      <input type="number" class="form-control" id="POS_INT_OVERFLOW" placeholder="">
+		    </div>
+		  </div>
+
+		  <div class="col-xs-4">
+		    <label for="NEG_INT_OVERFLOW" class="control-label">auto integrator underflow (neg)</label>
+		  </div>
+		  <div class="col-xs-8">
+		    <div class="input-group">
+		      <input type="number" class="form-control" id="NEG_INT_OVERFLOW" placeholder="">
+		    </div>
+		  </div>
+
 	        </div>
 	      </form>
 	    </div>
@@ -84,94 +163,98 @@
 		<div class="form-group">
 
 		  <!-- BEGIN parameter number fields -->
-		  <label for="RUN" class="col-xs-4 control-label">run</label>
-		  <div class="col-xs-8 input-group">
-		    <input type="checkbox" value="" id="RUN">
+		  <div class="col-xs-4">
+		    <label for="RUN" class="control-label">run</label>
 		  </div>
-		  <label for="OPENCLOSE" class="col-xs-4 control-label">closed/open</label>
-		  <div class="col-xs-8 input-group">
-		    <input type="checkbox" value="" id="OPENCLOSE">
+		  <div class="col-xs-8">
+		    <div class="input-group">
+		      <input type="checkbox" value="" id="RUN">
+		    </div>
 		  </div>
-		  <label for="IRESET" class="col-xs-4 control-label">integrator reset</label>
-		  <div class="col-xs-8 input-group">
-		    <input type="checkbox" value="" id="IRESET">
+
+		  <div class="col-xs-4">
+		    <label for="OPENCLOSE" class="control-label">closed/open</label>
 		  </div>
-		  <label for="LOCKSLOPE" class="col-xs-4 control-label">lock slope</label>
-		  <div class="col-xs-8 input-group">
-		    <input type="checkbox" value="" id="LOCKSLOPE">
+		  <div class="col-xs-8">
+		    <div class="input-group">
+		      <input type="checkbox" value="" id="OPENCLOSE">
+		    </div>
 		  </div>
-		  <label for="XLOCK" class="col-xs-4 control-label">xlock</label>
-		  <div class="col-xs-8 input-group">
-		    <input type="number" class="form-control" id="XLOCK" placeholder="">
+
+		  <div class="col-xs-4">
+		    <label for="TIMEX_TIMEY_XY" class="control-label">oscilloscope mode</label>
 		  </div>
-		  <label for="YLOCK" class="col-xs-4 control-label">ylock</label>
-		  <div class="col-xs-8 input-group">
-		    <input type="number" class="form-control" id="YLOCK" placeholder="">
+		  <div class="col-xs-8">
+		    <select class="form-control" id="MODE">
+		      <option value="0">TIME - X</option>
+		      <option value="1">TIME - Y</option>
+		      <option value="2">X - Y</option>
+		    </select>
 		  </div>
-		  <label for="TIMEX_TIMEY_XY" class="col-xs-4 control-label">oscilloscope mode</label>
-		  <div class="col-xs-8 input-group">
-		    <input type="number" class="form-control" id="TIMEX_TIMEY_XY" placeholder="">
+
+		  <div class="col-xs-4">
+		    <label for="ADC_CLKDIV" class="control-label">ADC clkdiv</label>
 		  </div>
-		  <label for="ADC_CLKDIV" class="col-xs-4 control-label">ADC clkdiv</label>
-		  <div class="col-xs-8 input-group">
-		    <input type="number" class="form-control" id="ADC_CLKDIV" placeholder="">
+		  <div class="col-xs-8">
+		    <div class="input-group">
+		      <input type="number" class="form-control" id="ADC_CLKDIV" placeholder="">
+		    </div>
 		  </div>
-		  <label for="ADC_AVERAGE" class="col-xs-4 control-label">ADC average</label>
-		  <div class="col-xs-8 input-group">
-		    <input type="number" class="form-control" id="ADC_AVERAGE" placeholder="">
+
+		  <div class="col-xs-4">
+		    <label for="ADC_AVERAGE" class="control-label">ADC average</label>
 		  </div>
-		  <label for="ADC_OPENDELAY" class="col-xs-4 control-label">ADC open delay</label>
-		  <div class="col-xs-8 input-group">
-		    <input type="number" class="form-control" id="ADC_OPENDELAY" placeholder="">
+		  <div class="col-xs-8">
+		    <div class="input-group">
+		      <input type="number" class="form-control" id="ADC_AVERAGE" placeholder="">
+		    </div>
 		  </div>
-		  <label for="ADC_CLOSEDDELAY" class="col-xs-4 control-label">ADC closed delay</label>
-		  <div class="col-xs-8 input-group">
-		    <input type="number" class="form-control" id="ADC_CLOSEDDELAY" placeholder="">
+
+		  <div class="col-xs-4">
+		    <label for="ADC_OPENDELAY" class="control-label">ADC open delay</label>
 		  </div>
-		  <label for="OPENAMPL" class="col-xs-4 control-label">open loop amplitude</label>
-		  <div class="col-xs-8 input-group">
-		    <input type="number" class="form-control" id="OPENAMPL" placeholder="">
+		  <DIV Class="col-xs-8">
+		    <div class="input-group">
+		      <input type="number" class="form-control" id="ADC_OPENDELAY" placeholder="">
+		    </div>
 		  </div>
-		  <label for="SCANPOINT" class="col-xs-4 control-label">open loop scan point</label>
-		  <div class="col-xs-8 input-group">
-		    <input type="number" class="form-control" id="SCANPOINT" placeholder="">
+
+		  <div class="col-xs-4">
+		    <label for="ADC_CLOSEDDELAY" class="control-label">ADC closed delay</label>
 		  </div>
-		  <label for="PGAIN" class="col-xs-4 control-label">proportional</label>
-		  <div class="col-xs-8 input-group">
-		    <input type="number" class="form-control" id="PGAIN" placeholder="">
+		  <div class="col-xs-8">
+		    <div class="input-group">
+		      <input type="number" class="form-control" id="ADC_CLOSEDDELAY" placeholder="">
+		    </div>
 		  </div>
-		  <label for="IGAIN" class="col-xs-4 control-label">integral</label>
-		  <div class="col-xs-8 input-group">
-		    <input type="number" class="form-control" id="IGAIN" placeholder="">
+
+		  <div class="col-xs-4">
+		    <label for="AUTOLOCK_EN" class="control-label">autolock enable</label>
 		  </div>
-		  <label for="DGAIN" class="col-xs-4 control-label">derivative</label>
-		  <div class="col-xs-8 input-group">
-		    <input type="number" class="form-control" id="DGAIN" placeholder="">
+		  <div class="col-xs-8">
+		    <div class="input-group">
+		      <input type="number" class="form-control" id="AUTOLOCK_EN" placeholder="">
+		    </div>
 		  </div>
-		  <label for="AUTO_IRESET" class="col-xs-4 control-label">automatic integrator reset</label>
-		  <div class="col-xs-8 input-group">
-		    <input type="number" class="form-control" id="AUTO_IRESET" placeholder="">
+
+		  <div class="col-xs-4">
+		    <label for="AUTOLOCK_LT_GT" class="control-label">autolock value</label>
 		  </div>
-		  <label for="POS_INT_OVERFLOW" class="col-xs-4 control-label">auto integrator overflow (pos)</label>
-		  <div class="col-xs-8 input-group">
-		    <input type="number" class="form-control" id="POS_INT_OVERFLOW" placeholder="">
+		  <div class="col-xs-8">
+		    <div class="input-group">
+		      <input type="number" class="form-control" id="AUTOLOCK_LT_GT" placeholder="">
+		    </div>
 		  </div>
-		  <label for="NEG_INT_OVERFLOW" class="col-xs-4 control-label">auto integrator underflow (neg)</label>
-		  <div class="col-xs-8 input-group">
-		    <input type="number" class="form-control" id="NEG_INT_OVERFLOW" placeholder="">
+
+		  <div class="col-xs-4">
+		    <label for="AUTOLOCK_POINT" class="control-label">autolock point</label>
 		  </div>
-		  <label for="AUTOLOCK_EN" class="col-xs-4 control-label">autolock enable</label>
-		  <div class="col-xs-8 input-group">
-		    <input type="number" class="form-control" id="AUTOLOCK_EN" placeholder="">
+		  <div class="col-xs-8">
+		    <div class="input-group">
+		      <input type="number" class="form-control" id="AUTOLOCK_POINT" placeholder="">
+		    </div>
 		  </div>
-		  <label for="AUTOLOCK_LT_GT" class="col-xs-4 control-label">autolock value</label>
-		  <div class="col-xs-8 input-group">
-		    <input type="number" class="form-control" id="AUTOLOCK_LT_GT" placeholder="">
-		  </div>
-		  <label for="AUTOLOCK_POINT" class="col-xs-4 control-label">autolock point</label>
-		  <div class="col-xs-8 input-group">
-		    <input type="number" class="form-control" id="AUTOLOCK_POINT" placeholder="">
-		  </div>
+
 		  <!-- END parameter number fields -->
 
 		</div>
@@ -185,8 +268,6 @@
 	      <div class="navbar-header">
 		<a class="navbar-brand">BeagleBone Black Oscilloscope</a>
 		<button onclick="run()" class="btn btn-primary navbar-btn" aria-expanded="false">RUN</button>
-		<button onclick="getParams()" class="btn btn-default navbar-btn" aria-expanded="false">get parameters</button>
-
 	      </div>
 	    </div>
 	  </nav>
