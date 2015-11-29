@@ -12,10 +12,10 @@
 	// query MySQL database
 	var queryData = function() {
 		switch(configs.dataFormat) {
-		  case 0:	// time - dac
+		  case "0":	// time - dac
 		    inserts = ([['time', 'dac'], 'data']);
 		    break;
-		  case 1:	// time - adc
+		  case "1":	// time - adc
 		    inserts = ([['time', 'adc'], 'data']);
 		    break;
 		  default:	// dac - adc
