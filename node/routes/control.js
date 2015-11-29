@@ -5,6 +5,7 @@
 //
 module.exports = function (app) {
 	var configs = require('../configs').sockets
+	var database = require('../database')
 
 	// Ask the server to run the experiment.
 	app.post("/control/run/", function (req, res) {
@@ -22,6 +23,12 @@ module.exports = function (app) {
 			try {
 				var jsonObj = JSON.parse(jsonString)
 				configs.dataFormat = jsonObj.value
+
+				// insert into database
+				var inserts = [jsonObj.value, jsonObj.name]
+				if (inserts[0] && inserts[1]) {		// ensure values not undefined
+					database.query('UPDATE parameters SET value = ? WHERE name = ?', inserts)
+				}
 				res.sendStatus(200)		// OK
 			} catch(err) {
 				res.sendStatus(400)		// Bad Request

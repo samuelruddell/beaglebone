@@ -216,6 +216,10 @@ unsigned int mysqlGetParameters(MYSQL *conn, unsigned int *pruSharedDataMemory_i
 				ireset_pos_neg |= (mem_value & 0xffff);         // NEGATIVE UNDERFLOW
 				break;
 
+			// do nothing (parameter not relevant to PRU program)
+			case 100 :
+				break;
+
 			// write memory normally
 			default : 			
 				*(pruSharedDataMemory_int + mem_offset) = mem_value;
