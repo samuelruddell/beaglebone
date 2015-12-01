@@ -182,16 +182,22 @@
         RSB r2, r2, 0                   // Reverse Unsigned Integer Subtract r2 = 0 - r2
 
         CLOSED_LOOP_OUT:
-          ADD r7, r7, r2                // ADD PID result to DAC output
+          ADD r1, r7.w0, r2             // ADD PID result to DAC output
         
         OVERFLOW_TEST:                  // test for PID overflow
-          QBEQ ENDLOOP, r7.w2, 0        // no overflow or underflow
-          QBBS UNDERFLOW, r7.t31        // number is negative therefore underflow
+          QBEQ ENDCLOSED, r1.w2, 0      // no overflow or underflow
+          QBBS UNDERFLOW, r1.t31        // number is negative therefore underflow
           OVERFLOW:
-            MOV r7, 0xffff              // max output
-            QBA ENDLOOP
+            MOV r1, 0xffff              // max output
+            QBA ENDCLOSED
           UNDERFLOW:
-            MOV r7, 0x0                 // min output
+            MOV r1, 0x0                 // min output
+
+        ENDCLOSED:                      
+          MOV r6.w2, r1.w0              // pack correct value for oscilloscope
+          LSL r1, r1.w0, 6              // ensure correct output to DAC, initial DAC value stored in r7
+          SET r1.t22
+          QBA SPI_CHECK
 
 /* SPI SEND DATA TO DAC */
     ENDLOOP:
