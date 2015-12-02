@@ -211,6 +211,7 @@ unsigned int mysqlGetParameters(MYSQL *conn, unsigned int *pruSharedDataMemory_i
                         // mask SLOW ACCUMULATOR value
                         case 15 :
 				*(pruSharedDataMemory_int + mem_offset) = (mem_value & 0xf);
+				break;
 
 			// pack AUTO INTEGRATOR OVERFLOW and UNDERFLOW
 			case 21 : 	
