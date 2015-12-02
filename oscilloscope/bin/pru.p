@@ -154,14 +154,21 @@
         MOV r29, r12                    // move PGAIN to MAC
         XOUT 0, r28, 8                  // multiply
         XIN 0, r26, 8                   // load in product to r26 and r27
-        MOV r15, r26                    // store lower product in r15
+        LSR r15, r26, 15                // store lower product in r15 with LSR
+        QBBC INTEGRAL, r15.t16          // number not negative
+        MOV r15.w2, 0xffff              // ensure negative numbers handled correctly
 
       INTEGRAL:
         QBBS INTEGRAL_RESET, r4.t1      // skip this if integrator reset active
         MOV r29, r13                    // move IGAIN to MAC
         XOUT 0, r28, 8                  // multiply
         XIN 0, r26, 8                   // load in product to r26 and r27
-        ADD r16, r16, r26               // integrate lower product into r16
+        LSR r2, r26, 15                 // retrieve lower product with LSR
+        QBBC INTEGRATE, r2.t16          // number not negative
+        MOV r2.w2, 0xffff               // ensure negative numbers handled correctly
+
+        INTEGRATE:
+          ADD r16, r16, r2              // integrate into r16
 
         QBBS AUTO_INT_RESET_TEST, r4.t2         // if auto integrator reset enabled, check for that instead
         INT_OVERFLOW_TEST:                      // test for integrator overflow
@@ -192,8 +199,11 @@
         MOV r29, r14                    // move DGAIN to MAC
         XOUT 0, r28, 8                  // multiply
         XIN 0, r26, 8                   // load in product to r26 and r27
-        MOV r17, r26                    // move lower product to r17
-        MOV r18, r19                    // error signal to previous error signal
+        LSR r17, r26, 15                // store lower product in r17 with LSR
+        QBBC DERIV, r17.t16             // number not negative
+        MOV r17.w2, 0xffff              // ensure negative numbers handled correctly
+        DERIV:
+          MOV r18, r19                  // error signal to previous error signal
 
       COMBINE_PID:
         ADD r2, r15, r16                // ADD P_RESULT and I_RESULT
