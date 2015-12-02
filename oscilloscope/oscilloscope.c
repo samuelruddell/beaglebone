@@ -208,6 +208,10 @@ unsigned int mysqlGetParameters(MYSQL *conn, unsigned int *pruSharedDataMemory_i
 				open_point_ampl |= ((mem_value & 0xffff) << 16);// SCANPOINT
 				break;
 
+                        // mask SLOW ACCUMULATOR value
+                        case 15 :
+				*(pruSharedDataMemory_int + mem_offset) = (mem_value & 0xf);
+
 			// pack AUTO INTEGRATOR OVERFLOW and UNDERFLOW
 			case 21 : 	
 				ireset_pos_neg |= ((mem_value & 0xffff) << 16); // POSITIVE OVERFLOW

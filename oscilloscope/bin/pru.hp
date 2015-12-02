@@ -14,6 +14,7 @@
 #define BOOLEANS                0x4     // externally set booleans
 #define XLOCK_YLOCK             0x8     // XLOCK and YLOCK
 #define OPEN_POINT_AMPL         0x34    // open loop ramp scan point and amplitude
+#define SLOW_ACCUM              0x3c    // number of ADC accumulations for slow DAC (2^x)
 #define PGAIN                   0x40
 #define IGAIN                   0x44
 #define DGAIN                   0x48

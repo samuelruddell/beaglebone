@@ -15,8 +15,8 @@ To compile the software, ensure you have all the correct compilers (gcc, pasm). 
 | r2            | TMP VALUE                             |
 | r3            | w2: MEMORY SIZE               w0: WRITE COUNTER       |
 | r4            | BOOLS 	                        |
-| r5            |                                       |
-| r6            |                                       |
+| r5            | ACCUMULATER FOR SLOW DAC AVERAGING    |
+| r6            | w2: ACCUMULATER NUMBER        w0: COUNTER             |
 | r7            | DAC VALUE                             |
 | r8            | TIME                                  |
 | r9            | w2: DAC VALUE (PACKED)	w0: ADC                 |

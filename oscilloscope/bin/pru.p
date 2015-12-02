@@ -121,11 +121,32 @@
                                         // otherwise transition to closed loop
           SUB r18, r9.w0, r11.w0        // set an initial value for previous error signal
           CLR r4.t17                    // unprime semi-closed loop
+          MOV r6.b2, r6.b3              // prepare slow accumulator
+          MOV r5, 0x0
+          MOV r6.w0, 0x0
 
           JAL r23.w0, SETUP_ADC         // setup adc for closed loop
 
 /* CLOSED LOOP */
     CLOSEDLOOP:
+
+    /* SLOW ACCUMULATION LOGIC */
+        QBEQ ACCUM_PREP, r6.b2, 0x0     // skip accumulator if no accumulation called for
+        ADD r5, r5, r9.w0               // add current ADC reading to accumulator
+        ADD r6.w0, r6.w0, 1             // increase accumulation
+        QBBS ACCUM_FULL, r6, r6.b2      // if number of accumulations reached (powers of 2)
+        QBA LOAD_DATA                   // skip gain calculation, SPI out, memory storing and interrupt handling
+
+        ACCUM_FULL:
+          LSR r5, r5, r6.b2             // average all values in r5 (floor remainder)
+          MOV r9.w0, r5.w0              // move averaged ADC value to r9.w0 for processing
+          MOV r5, 0x0                   // clear accumulator
+          MOV r6.w0, 0x0                // clear accumulator counts
+
+        ACCUM_PREP:
+          MOV r6.b2, r6.b3              // number of averages may have changed due to LOAD_PARAMETERS
+
+      PERFORM_CLOSED_LOOP:
         SUB r19, r9.w0, r11.w0          // calculate error signal as ADC - YLOCK
 
       PROPORTIONAL:
@@ -279,6 +300,7 @@
                                         // bit[18]: AUTOLOCK STATUS
                                         // bit[31]: WRITE OUT ENABLE
 
+      LBBO r6.b3, r1, SLOW_ACCUM, 1     // load number of accumulations for slow DAC
       LBBO r10, r1, OPEN_POINT_AMPL, 4  // load open loop ramp scan point and amplitude
       LBBO r11, r1, XLOCK_YLOCK, 4      // w2: DAC set point (for scan to)
                                         // w0: ADC set point / autolock point
