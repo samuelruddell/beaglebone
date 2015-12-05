@@ -19,7 +19,11 @@ $(document).ready(function() {
 
   // listen for form field changes and POST
   $('#tabs :input[type="number"]').change(function () {
-    var param = JSON.stringify({name: $(this).attr('id'), value: $(this).val()})
+    if ($(this).attr('id') == 'PGAIN' | $(this).attr('id') == 'IGAIN' | $(this).attr('id') == 'DGAIN') {
+      var param = JSON.stringify({name: $(this).attr('id'), value: ($(this).val()*32768).toFixed(0)})
+    } else {
+      var param = JSON.stringify({name: $(this).attr('id'), value: $(this).val()})
+    }
     // POST data, GET parameters as callback	
     $.post("/params/", param, getParams) 
   });
@@ -68,9 +72,11 @@ function getParams() {
 	var element = document.getElementById(data[obj].name)
 	if(element.type == 'checkbox') {
 	  element.checked = data[obj].value	// checkbox
-	} else {
+	} else if (data[obj].name == 'PGAIN' | data[obj].name == 'IGAIN' | data[obj].name == 'DGAIN'){
+      	  element.value = (data[obj].value/16384).toFixed(4)/2	// represent number in decimal notation
+	} else { 
       	  element.value = data[obj].value	// number field
-	} 
+	}
       } catch (err) {
         // getElementById(...) is null
       }

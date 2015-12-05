@@ -124,6 +124,8 @@
           MOV r6.b2, r6.b3              // prepare slow accumulator
           MOV r5, 0x0
           MOV r6.w0, 0x0
+          
+          MOV r16, 0x0                  // reset integrator
 
           JAL r23.w0, SETUP_ADC         // setup adc for closed loop
 
@@ -148,9 +150,9 @@
 
       PERFORM_CLOSED_LOOP:
         SUB r19, r9.w0, r11.w0          // calculate error signal as ADC - YLOCK
+        MOV r28, r19                    // error signal value to MAC as operand 1
 
       PROPORTIONAL:
-        MOV r28, r19                    // error signal value to MAC as operand 1
         MOV r29, r12                    // move PGAIN to MAC
         XOUT 0, r28, 8                  // multiply
         XIN 0, r26, 8                   // load in product to r26 and r27
