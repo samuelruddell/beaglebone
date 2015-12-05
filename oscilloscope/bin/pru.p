@@ -68,7 +68,8 @@
         SUB r18, r9.w0, r11.w0          // set an initial value for previous error signal
         CLR r4.t17                      // unprime semi-closed loop
         SET r4.t18                      // set internal autolock status (perform closed loop)
-        SET r4.t0                       // temporarily set closed loop for adc_setup
+        SET r4.t0                       // temporarily set closed loop for adc_setup (LOAD_PARAMETERS will reset)
+        MOV r16, 0x0                    // reset integrator
         JAL r23.w0, SETUP_ADC           // setup adc for closed loop
         QBA CLOSEDLOOP
       
@@ -156,18 +157,28 @@
         MOV r29, r12                    // move PGAIN to MAC
         XOUT 0, r28, 8                  // multiply
         XIN 0, r26, 8                   // load in product to r26 and r27
-        LSR r15, r26, 15                // store lower product in r15 with LSR
-        QBBC INTEGRAL, r15.t16          // number not negative
-        MOV r15.w2, 0xffff              // ensure negative numbers handled correctly
+        QBBC PPOS, r26.t31              // result is positive
+        PNEG:
+          RSB r15, r26, 0               // make negative result positive to prevent rounding to negative infinity
+          LSR r15, r15, 15              // round result correctly
+          RSB r15, r15, 0               // make result negative again
+          QBA INTEGRAL
+        PPOS:
+          LSR r15, r26, 15              // store lower product in r15 with LSR
 
       INTEGRAL:
         QBBS INTEGRAL_RESET, r4.t1      // skip this if integrator reset active
         MOV r29, r13                    // move IGAIN to MAC
         XOUT 0, r28, 8                  // multiply
         XIN 0, r26, 8                   // load in product to r26 and r27
-        LSR r2, r26, 15                 // retrieve lower product with LSR
-        QBBC INTEGRATE, r2.t16          // number not negative
-        MOV r2.w2, 0xffff               // ensure negative numbers handled correctly
+        QBBC IPOS, r26.t31              // result is positive
+        INEG:
+          RSB r2, r26, 0                // make negative result positive to prevent rounding to negative infinity
+          LSR r2, r2, 15                // round result correctly
+          RSB r2, r2, 0                 // make result negative again
+          QBA INTEGRATE
+        IPOS:
+          LSR r2, r26, 15               // store lower product in r2 with LSR
 
         INTEGRATE:
           ADD r16, r16, r2              // integrate into r16
@@ -201,10 +212,16 @@
         MOV r29, r14                    // move DGAIN to MAC
         XOUT 0, r28, 8                  // multiply
         XIN 0, r26, 8                   // load in product to r26 and r27
-        LSR r17, r26, 15                // store lower product in r17 with LSR
-        QBBC DERIV, r17.t16             // number not negative
-        MOV r17.w2, 0xffff              // ensure negative numbers handled correctly
-        DERIV:
+        QBBC DPOS, r26.t31              // result is positive
+        DNEG:
+          RSB r17, r26, 0               // make negative result positive to prevent rounding to negative infinity
+          LSR r17, r17, 15              // round result correctly
+          RSB r17, r17, 0               // make result negative again
+          QBA DERIV_END
+        DPOS:
+          LSR r17, r26, 15              // store lower product in r15 with LSR
+
+        DERIV_END:
           MOV r18, r19                  // error signal to previous error signal
 
       COMBINE_PID:
