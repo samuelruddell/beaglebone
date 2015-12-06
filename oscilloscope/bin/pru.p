@@ -69,6 +69,7 @@
         CLR r4.t17                      // unprime semi-closed loop
         SET r4.t18                      // set internal autolock status (perform closed loop)
         SET r4.t0                       // temporarily set closed loop for adc_setup (LOAD_PARAMETERS will reset)
+        MOV r5, 0x0                     // reset accumulator
         MOV r16, 0x0                    // reset integrator
         JAL r23.w0, SETUP_ADC           // setup adc for closed loop
         QBA CLOSEDLOOP
@@ -76,8 +77,23 @@
 /* OPEN LOOP */
     OPENLOOP:
       CLR r4.t18                        // ensure internal autolock status clear (perform open loop)
-      MOV r2, r10.w2                    // open loop scan point for condition checking below
-      QBBC SCANDOWN, r4.t16             // scan down instead
+      
+    /* OSCILLOSCOPE TRIGGER LOGIC */
+      CLR r4.t29                          // clear write this step flag
+      QBBC SCAN_LOGIC, r4.t30             // no need for writing if trigger not reached
+      QBEQ OPEN_ACCUM_FULL, r6.w0, r6.w2  // if number of accumulations reached
+      ADD r6.w0, r6.w0, 1                 // increase accumulation
+      QBA SCAN_LOGIC                      // skip gain calculation, SPI out, memory storing and interrupt handling
+
+      OPEN_ACCUM_FULL:
+        MOV r6.w0, 0x0                  // clear accumulator counts
+        LSR r6.w2, r10.w0, 10           // prepare number of skips (assumes DAC steps of 1)
+        SET r4.t29                      // write this step
+
+      /* OPEN LOOP SCANNING LOGIC */
+      SCAN_LOGIC:
+        MOV r2, r10.w2                  // open loop scan point for condition checking below
+        QBBC SCANDOWN, r4.t16           // scan down instead
 
       SCANUP:
         ADD r2, r2, r10.w0              // test whether upper amplitude reached 
@@ -85,25 +101,44 @@
         MOV r2, 0xffff
         QBEQ TOGGLE_DIRECTION, r7, r2   // toggle direction if max amplitude reached
         ADD r7, r7, 1                   // else increase DAC output
-        QBA ENDLOOP        
+        QBA ENDOPENLOOP        
 
       SCANDOWN:
         SUB r2, r2, r10.w0              // test whether lower amplitude reached
         QBBC SCANDOWN_CONT, r2.t31      // check if lower amplitude is negative 
         MOV r2, 0x0                     // if negative set lower amplitude as zero 
         SCANDOWN_CONT:
-          QBGE TOGGLE_DIRECTION, r7, r2 // toggle direction if lower amplitude reached
+          QBGE PRE_TOGGLE_DIR, r7, r2   // toggle direction if lower amplitude reached
           SUB r7, r7, 1                 // else decrease DAC output
-          QBA ENDLOOP        
+          QBA ENDOPENLOOP        
+
+      PRE_TOGGLE_DIR:
+        QBBC TOGGLE_DIRECTION, r4.t31   // no writing yet
+        SET r4.t30                      // trigger for begin write out
 
       TOGGLE_DIRECTION:
         MOV r7, r2                      // MOV min/max amplitude to DAC output
         XOR r4.b2, r4.b2, 1             // TOGGLE scan UP/DOWN
-
-      LOAD_ADC_PARAMETERS:              // LOAD new ADC parameters on open loop only
-        JAL r23.w0, SETUP_ADC           // setup ADC subroutine 
+      LOAD_ADC_PARS:                    // LOAD new ADC parameters on open loop only
+        JAL r23.w0, SETUP_ADC           // setup ADC subroutine (only on open loop toggle direction)
         SET r4.t17                      // prime semiclosed loop
-        QBA ENDLOOP
+
+      ENDOPENLOOP:
+      /* OPEN LOOP SPI OUT */
+        SPI_OPEN_BUILDWORD:               // prepare data for sending to DAC MAX5216      
+          LSL r1, r7.w0, 6
+          SET r1.t22
+  
+        SPI_OPEN_CHECK:                        
+          // LBBO r2, r22, SPI_CH0STAT, 4 // Check transmitter register status
+          // QBBC SPI_END, r2.t1          // skip if still transmitting previous data
+  
+        SPI_OPEN_SEND:
+          SBBO r1, r22, SPI_TX0, 4        // word to transmit 
+        SPI_OPEN_END:
+          QBBS WRITEDATA, r4.t29
+          QBBC ARM_INTERRUPT, r4.t31      // check interrupt if write disabled
+          QBA INT_CHECK
 
 /* SEMI-CLOSED LOOP */
       SEMICLOSEDLOOP:                   // Scan DAC to XLOCK before enabling closed loop 
@@ -133,7 +168,7 @@
 /* CLOSED LOOP */
     CLOSEDLOOP:
 
-    /* SLOW ACCUMULATION LOGIC */
+    /* ACCUMULATION AVERAGING LOGIC */
         QBEQ ACCUM_PREP, r6.b2, 0x0     // skip accumulator if no accumulation called for
         ADD r5, r5, r9.w0               // add current ADC reading to accumulator
         ADD r6.w0, r6.w0, 1             // increase accumulation
@@ -149,6 +184,7 @@
         ACCUM_PREP:
           MOV r6.b2, r6.b3              // number of averages may have changed due to LOAD_PARAMETERS
 
+    /* PID LOGIC */
       PERFORM_CLOSED_LOOP:
         SUB r19, r9.w0, r11.w0          // calculate error signal as ADC - YLOCK
         MOV r28, r19                    // error signal value to MAC as operand 1
@@ -255,8 +291,8 @@
         SET r1.t22
 
       SPI_CHECK:                        
-        LBBO r2, r22, SPI_CH0STAT, 4    // Check transmitter register status
-        QBBC SPI_END, r2.t1             // skip if still transmitting previous data
+        // LBBO r2, r22, SPI_CH0STAT, 4    // Check transmitter register status
+        // QBBC SPI_END, r2.t1             // skip if still transmitting previous data
 
       SPI_SEND:
         SBBO r1, r22, SPI_TX0, 4        // word to transmit 
@@ -298,7 +334,7 @@
       SBCO r2, c28, CYCLE, 4            // clear CYCLE counter
     
       MOV r3.w0, 0                      // start from 0th memory address
-      CLR r4.t31                        // disable writing
+      AND r4.b3, r4.b3, 0b00011111      // CLR r4.t29-t31 to disable writing
     
       QBA WAIT
 
@@ -327,6 +363,8 @@
                                         // bit[16]: OPEN LOOP SCAN UP / DOWN
                                         // bit[17]: SEMI-CLOSED LOOP STATUS
                                         // bit[18]: AUTOLOCK STATUS
+                                        // bit[29]: OPEN LOOP WRITE THIS STEP
+                                        // bit[30]: OPEN LOOP WRITE TRIGGER
                                         // bit[31]: WRITE OUT ENABLE
 
       LBBO r6.b3, r1, SLOW_ACCUM, 1     // load number of accumulations for slow DAC
