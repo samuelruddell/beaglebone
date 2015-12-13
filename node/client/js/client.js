@@ -19,7 +19,7 @@ $(document).ready(function() {
 
   // listen for form field changes and POST
   $('#tabs :input[type="number"]').change(function () {
-    if ($(this).attr('id') == 'PGAIN' | $(this).attr('id') == 'IGAIN' | $(this).attr('id') == 'DGAIN') {
+    if ($(this).attr('id') == 'PGAIN' | $(this).attr('id') == 'IGAIN' | $(this).attr('id') == 'DGAIN' | $(this).attr('id') == 'PGAIN2') {
       var param = JSON.stringify({name: $(this).attr('id'), value: ($(this).val()*32768).toFixed(0)})
     } else {
       var param = JSON.stringify({name: $(this).attr('id'), value: $(this).val()})
@@ -72,7 +72,7 @@ function getParams() {
 	var element = document.getElementById(data[obj].name)
 	if(element.type == 'checkbox') {
 	  element.checked = data[obj].value	// checkbox
-	} else if (data[obj].name == 'PGAIN' | data[obj].name == 'IGAIN' | data[obj].name == 'DGAIN'){
+	} else if (data[obj].name == 'PGAIN' | data[obj].name == 'IGAIN' | data[obj].name == 'DGAIN' | data[obj].name == 'PGAIN2'){
       	  element.value = (data[obj].value/16384).toFixed(4)/2	// represent number in decimal notation
 	} else { 
       	  element.value = data[obj].value	// number field
