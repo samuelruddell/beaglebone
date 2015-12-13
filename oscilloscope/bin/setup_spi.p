@@ -37,3 +37,14 @@ SPI1_CONFIGURE:
 
     MOV r2, 0x1                         // enable SPI1 channel 0
     SBBO r2, r22, SPI_CH0CTRL, 4
+    
+    /* setup channel 1 */
+    MOV r2, 0x0                         // disable SPI1 channel 1
+    SBBO r2, r22, SPI_CH1CTRL, 4       
+
+    // configure channel 1 for TI DAC8830
+    MOV r2, 0b00000000000000100010011111000000
+    SBBO r2, r22, SPI_CH1CONF, 4
+
+    MOV r2, 0x1                         // enable SPI1 channel 1
+    SBBO r2, r22, SPI_CH1CTRL, 4

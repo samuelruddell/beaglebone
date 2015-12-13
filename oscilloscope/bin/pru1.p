@@ -12,8 +12,8 @@
       CLR r2, r2, 4                     // enable OCP master ports
       SBCO r2, c4, 4, 4                 // store SYSCFG settings
 
-      // MOV r2, 0x3                    // XFR shift enabled, give PRU1 scratch priority
-      // SBCO r2, c4, 0x34, 4           // store SPP settings (Scratch Pad Priority)
+      MOV r2, 0x3                       // XFR shift enabled, give PRU1 scratch priority
+      SBCO r2, c4, 0x34, 4              // store SPP settings (Scratch Pad Priority)
 
       MOV r1, CTPPR0                    // Constant Table Programmable Pointer
       MOV r2, 0x240                     // set up c28 as PRU CTRL register pointer
@@ -51,6 +51,9 @@
     
     PACK:                               // pack DAC and ADC data into a single 32-bit register
       MOV r9.w2, r7.w0                  // DAC value
+
+    XFR_DATA:
+      XOUT 14, r9, 12                   // send ADC, DAC, lock point, to PRU_0
 
 /* PRE-LOOP */
       QBBC SEMICLOSEDLOOP, r4.t0        // do semi-closed / closed loop if bit[0] (open/closed loop) clear
@@ -371,6 +374,10 @@
       LBBO r10, r1, OPEN_POINT_AMPL, 4  // load open loop ramp scan point and amplitude
       LBBO r11, r1, XLOCK_YLOCK, 4      // w2: DAC set point (for scan to)
                                         // w0: ADC set point / autolock point
+
+      LBBO r12, r1, PGAIN2, 4           // load PGAIN2
+      XOUT 10, r12, 4                   // store PGAIN2 in r12 broadside memory bank 10
+
       LBBO r12, r1, PGAIN, 4            // load PGAIN
       LBBO r13, r1, IGAIN, 4            // load IGAIN
       LBBO r14, r1, DGAIN, 4            // load DGAIN

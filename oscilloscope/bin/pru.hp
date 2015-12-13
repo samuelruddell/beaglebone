@@ -18,6 +18,7 @@
 #define PGAIN                   0x40
 #define IGAIN                   0x44
 #define DGAIN                   0x48
+#define PGAIN2			0x6c
 #define IRESET_POS_NEG		0x54    // max and min point to trigger integrator reset
 
 /* ADC DEFINITIONS */

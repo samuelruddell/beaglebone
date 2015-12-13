@@ -70,7 +70,8 @@ int main (int argc, char **argv)
 	runScope = mysqlGetParameters(conn, pruSharedDataMemory_int);
 
 	/* Load and execute binary on PRU */
-	prussdrv_exec_program (PRU_1, "./pru.bin");
+	prussdrv_exec_program (PRU_0, "./pru0.bin");
+	prussdrv_exec_program (PRU_1, "./pru1.bin");
 
 	while(1) {
 		/* run oscilloscope */
