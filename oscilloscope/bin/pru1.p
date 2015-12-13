@@ -49,11 +49,11 @@
       LBCO r8, c28, CYCLE, 4            // load in CYCLE COUNT
       LBBO r9, r21, 0, 4                // load 4 bytes from FIFO into r9
     
+    XFR_DATA:
+      XOUT 14, r4, 32                   // send booleans, ADC, lock point to PRU_0
+
     PACK:                               // pack DAC and ADC data into a single 32-bit register
       MOV r9.w2, r7.w0                  // DAC value
-
-    XFR_DATA:
-      XOUT 14, r9, 12                   // send ADC, DAC, lock point, to PRU_0
 
 /* PRE-LOOP */
       QBBC SEMICLOSEDLOOP, r4.t0        // do semi-closed / closed loop if bit[0] (open/closed loop) clear

@@ -18,12 +18,12 @@ INIT:
 /* AWAIT ADC READING */
 AWAIT:
     XIN 14, r4, 32                      // LOAD data from PRU_1
-    QBBS AWAIT, r9.t15                  // XFR timed out
+    QBBS AWAIT, r9.t15                  // check whether XFR timed out
     SUB r28, r9.w0, r11.w0              // calculate error signal as ADC - YLOCK, send to MPY
     
 /* CALCULATE PID */
 CALC_PROPORTIONAL:
-    XOUT 0, r28, 8                      // initiate multiply
+    XOUT 0, r28, 8                      // initiate multiply (care for collisions with PRU_1)
     XIN 0, r26, 8                       // get result
     QBBC PPOS, r26.t31                  // result is positive
     PNEG:
@@ -66,6 +66,7 @@ PREPARE_NEXT:
     SUB r18, r9.w0, r11.w0              // error signal becomes previous error signal
     XIN 10, r12, 12                     // load in PID gains
     MOV r29, r12                        // PGAIN to MPY
+    SET r9.t15                          // for XFR timeout checks
     QBA AWAIT
 
 QUIT:
