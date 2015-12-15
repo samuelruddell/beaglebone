@@ -54,6 +54,17 @@ PREPARE_RESULT:
 /* SEND RESULT TO DAC */
 CLOSED_SPI:
     ADD r2, r7.w0, r15                  // add PID gain to DAC output
+
+    OVERFLOW_TEST:                      // test for PID overflow
+      QBEQ SPI_SEND, r2.w2, 0           // no overflow or underflow
+      QBBS UNDERFLOW, r2.t31            // number is negative therefore underflow
+      OVERFLOW:
+        MOV r2, 0xffff                  // max output
+        QBA SPI_SEND
+      UNDERFLOW:
+        MOV r2, 0x0                     // min output
+
+    SPI_SEND:
     SBBO r2.w0, r22, SPI_TX1, 4         // send resulting value to DAC 
     QBA PREPARE_NEXT
 
