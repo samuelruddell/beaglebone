@@ -11,19 +11,17 @@
 /* INITIALISE REGISTERS */
 INIT:
     ZERO 0, 124                         // ensure all registers zero
-    SET r9.t15                          // for XFR timeout checks
     MOV r22, MCSPI1_                    // SPI address
-    MOV r3, 0x8000                      // default value for DAC    
 
 /* AWAIT ADC READING */
 AWAIT:
-    XIN 14, r4, 32                      // LOAD data from PRU_1
-    QBBS AWAIT, r9.t15                  // check whether XFR timed out
+    XIN 10, r4, 32                      // LOAD data from PRU_1
+    QBBC AWAIT, r4.t15                  // check whether fast DAC enabled
     SUB r28, r9.w0, r11.w0              // calculate error signal as ADC - YLOCK, send to MPY
     
 /* CALCULATE PID */
 CALC_PROPORTIONAL:
-    XOUT 0, r28, 8                      // initiate multiply (care for collisions with PRU_1)
+    XOUT 0, r28, 8                      // initiate multiply (take care for collisions with PRU_1)
     XIN 0, r26, 8                       // get result
     QBBC PPOS, r26.t31                  // result is positive
     PNEG:
@@ -50,23 +48,26 @@ CALC_DERIVATIVE:
 
 /* PREPARE RESULT */
 PREPARE_RESULT:
-    QBBS OPEN_SPI, r4.t0                // open loop, so no need for any change
-    ADD r2, r3, r15                     // add PID gain
+    QBBS OPEN_SPI, r4.t0                // open loop
+    QBBS OPEN_SPI, r4.t17               // semi-closed loop
 
 /* SEND RESULT TO DAC */
 CLOSED_SPI:
+    ADD r2, r7.w0, r15                  // add PID gain to DAC output
     SBBO r2.w0, r22, SPI_TX1, 4         // send resulting value to DAC 
     QBA PREPARE_NEXT
 
 OPEN_SPI:
-    SBBO r3.w0, r22, SPI_TX1, 4         // DAC fixed at 0x8000
+    SBBO r7.w0, r22, SPI_TX1, 4         // follow other DAC
         
 /* PREPARE FOR NEXT CALCULATION */
 PREPARE_NEXT:
     SUB r18, r9.w0, r11.w0              // error signal becomes previous error signal
     XIN 10, r12, 12                     // load in PID gains
     MOV r29, r12                        // PGAIN to MPY
-    SET r9.t15                          // for XFR timeout checks
+
+    CLR r4.t15                          // disable DAC until triggered by PRU_1
+    XOUT 10, r4, 4
     QBA AWAIT
 
 QUIT:

@@ -12,7 +12,7 @@
       CLR r2, r2, 4                     // enable OCP master ports
       SBCO r2, c4, 4, 4                 // store SYSCFG settings
 
-      MOV r2, 0x3                       // XFR shift enabled, give PRU1 scratch priority
+      MOV r2, 0x1                       // XFR shift disabled, PRU1 has scratch priority
       SBCO r2, c4, 0x34, 4              // store SPP settings (Scratch Pad Priority)
 
       MOV r1, CTPPR0                    // Constant Table Programmable Pointer
@@ -50,7 +50,7 @@
       LBBO r9, r21, 0, 4                // load 4 bytes from FIFO into r9
     
     XFR_DATA:
-      XOUT 14, r4, 32                   // send booleans, ADC, lock point to PRU_0
+      XOUT 10, r4, 32                   // send booleans, ADC, lock point to PRU_0
 
     PACK:                               // pack DAC and ADC data into a single 32-bit register
       MOV r9.w2, r7.w0                  // DAC value
@@ -361,6 +361,7 @@
                                         // bit[3]: LOCK SLOPE
                                         // bit[4]: AUTO LOCK ENABLE
                                         // bit[5]: AUTO LOCK ABOVE / BELOW POINT
+                                        // bit[15]: ENABLE FAST DAC
 
                                         // internally set booleans stored in r4.w2
                                         // bit[16]: OPEN LOOP SCAN UP / DOWN
@@ -369,6 +370,7 @@
                                         // bit[29]: OPEN LOOP WRITE THIS STEP
                                         // bit[30]: OPEN LOOP WRITE TRIGGER
                                         // bit[31]: WRITE OUT ENABLE
+      SET r4.t15                                  
 
       LBBO r6.b3, r1, SLOW_ACCUM, 1     // load number of accumulations for slow DAC
       LBBO r10, r1, OPEN_POINT_AMPL, 4  // load open loop ramp scan point and amplitude
