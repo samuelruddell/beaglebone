@@ -128,9 +128,9 @@
 
       ENDOPENLOOP:
       /* OPEN LOOP SPI OUT */
-        SPI_OPEN_BUILDWORD:               // prepare data for sending to DAC MAX5216      
-          LSL r1, r7.w0, 6
-          SET r1.t22
+        SPI_OPEN_BUILDWORD:               // prepare data for sending to DAC AD5545
+          MOV r1, r7.w0 
+          SET r1.t17
   
         SPI_OPEN_CHECK:                        
           // LBBO r2, r22, SPI_CH0STAT, 4 // Check transmitter register status
@@ -290,8 +290,8 @@
 /* SPI SEND DATA TO DAC */
     ENDLOOP:
       SPI_BUILDWORD:                    // prepare data for sending to DAC MAX5216      
-        LSL r1, r7.w0, 6
-        SET r1.t22
+        MOV r1, r7.w0
+        SET r1.t17
 
       SPI_CHECK:                        
         // LBBO r2, r22, SPI_CH0STAT, 4    // Check transmitter register status

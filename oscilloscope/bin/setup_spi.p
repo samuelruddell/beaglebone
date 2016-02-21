@@ -1,8 +1,8 @@
 /* setup for SPI module */
 SPI1_INIT:
-    MOV r22, MCSPI1_                    // MCSPI1 base address
+    MOV r22, MCSPI0_                    // MCSPI0 base address
 
-    MOV r1, CM_PER_ | SPI1_CLKCTRL      // define SPI1 clock management
+    MOV r1, CM_PER_ | SPI0_CLKCTRL      // define SPI0 clock management
     MOV r2, 0x2                         // explicitly enabled
     SBBO r2, r1, 0, 4                   
 
@@ -31,20 +31,9 @@ SPI1_CONFIGURE:
     MOV r2, 0x0                         // disable SPI1 channel 0
     SBBO r2, r22, SPI_CH0CTRL, 4       
 
-    // configure channel 0 for MAX5216 DAC
-    MOV r2, 0b00000000000000010010101111000001
+    // configure channel 0 for AD5545 DAC
+    MOV r2, 0b00001000000000100010100011000000
     SBBO r2, r22, SPI_CH0CONF, 4
 
     MOV r2, 0x1                         // enable SPI1 channel 0
     SBBO r2, r22, SPI_CH0CTRL, 4
-    
-    /* setup channel 1 */
-    MOV r2, 0x0                         // disable SPI1 channel 1
-    SBBO r2, r22, SPI_CH1CTRL, 4       
-
-    // configure channel 1 for TI DAC8830
-    MOV r2, 0b00000000000000100010011111000000
-    SBBO r2, r22, SPI_CH1CONF, 4
-
-    MOV r2, 0x1                         // enable SPI1 channel 1
-    SBBO r2, r22, SPI_CH1CTRL, 4

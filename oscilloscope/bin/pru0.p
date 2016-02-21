@@ -11,7 +11,8 @@
 /* INITIALISE REGISTERS */
 INIT:
     ZERO 0, 124                         // ensure all registers zero
-    MOV r22, MCSPI1_                    // SPI address
+    MOV r22, MCSPI0_                    // SPI address
+    SET r1.t16                          // set SPI channel on SPI SEND
 
 /* AWAIT ADC READING */
 AWAIT:
@@ -65,11 +66,13 @@ CLOSED_SPI:
         MOV r2, 0x0                     // min output
 
     SPI_SEND:
-    SBBO r2.w0, r22, SPI_TX1, 4         // send resulting value to DAC 
+    MOV r1.w0, r2.w0
+    SBBO r1, r22, SPI_TX0, 4            // send resulting value to DAC 
     QBA PREPARE_NEXT
 
 OPEN_SPI:
-    SBBO r7.w0, r22, SPI_TX1, 4         // follow other DAC
+    MOV r1.w0, r7.w0
+    SBBO r1, r22, SPI_TX0, 4            // follow other DAC
         
 /* PREPARE FOR NEXT CALCULATION */
 PREPARE_NEXT:
