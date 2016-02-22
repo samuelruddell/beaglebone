@@ -8,7 +8,18 @@ var express 		= require('express'),
     configs 		= require('./configs').server,
     router 		= require('./router'),
     database 		= require('./database'),
-    sockets 		= require('./sockets')
+    sockets 		= require('./sockets'),
+    b			= require('bonescript')
+
+// initialise pins
+b.pinMode('P8_9', b.OUTPUT)
+b.pinMode('P8_34', b.OUTPUT)
+b.pinMode('P8_32', b.OUTPUT)
+b.pinMode('P8_7', b.OUTPUT)
+b.pinMode('P8_11', b.OUTPUT)
+b.pinMode('P8_13', b.OUTPUT)
+b.pinMode('P8_15', b.OUTPUT)
+b.pinMode('P8_17', b.OUTPUT) 
 
 // Attempt to open a connection to the configured database.
 if (database.connect()) {

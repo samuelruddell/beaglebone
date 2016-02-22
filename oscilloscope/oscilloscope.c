@@ -224,6 +224,14 @@ unsigned int mysqlGetParameters(MYSQL *conn, unsigned int *pruSharedDataMemory_i
 
 			// do nothing (parameter not relevant to PRU program)
 			case 100 :
+			case 101 :
+			case 102 :
+			case 103 :
+			case 104 :
+			case 105 :
+			case 106 :
+			case 107 :
+			case 108 :
 				break;
 
 			// write memory normally

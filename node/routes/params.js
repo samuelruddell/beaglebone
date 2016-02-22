@@ -5,6 +5,7 @@
 //
 
 var database = require('../database')
+var b = require('bonescript')
 
 module.exports = function (app) {
 
@@ -23,6 +24,8 @@ module.exports = function (app) {
 
 				if (inserts[0] && inserts[1]) {		// ensure values not undefined
 					database.query('UPDATE parameters SET value = ? WHERE name = ?', inserts)
+					mux(inserts)
+					
 					res.sendStatus(200)		// OK
 				} else {
 					res.sendStatus(400)		// Bad Request
@@ -39,5 +42,58 @@ module.exports = function (app) {
 		database.query('SELECT ?? FROM ??', [['name','value'],'parameters'], function(data) {
 			res.send(data)
 		})
-	})	
+	});	
+
+};
+
+mux = function(val, callback) {
+	if (val[1] == 'IN1'){
+		if (val[0] == 1){
+			b.digitalWrite('P8_9', b.HIGH)
+		} else {
+			b.digitalWrite('P8_9', b.LOW)
+		}
+	} else if (val[1] == 'IN2'){
+		if (val[0] == 1){
+			b.digitalWrite('P8_34', b.HIGH)
+		} else {
+			b.digitalWrite('P8_34', b.LOW)
+		}
+	} else if (val[1] == 'IN3'){
+		if (val[0] == 1){
+			b.digitalWrite('P8_32', b.HIGH)
+		} else {
+			b.digitalWrite('P8_32', b.LOW)
+		}
+	} else if (val[1] == 'IN4'){
+		if (val[0] == 1){
+			b.digitalWrite('P8_7', b.HIGH)
+		} else {
+			b.digitalWrite('P8_7', b.LOW)
+		}
+	} else if (val[1] == 'FAST1'){
+		if (val[0] == 1){
+			b.digitalWrite('P8_11', b.HIGH)
+		} else {
+			b.digitalWrite('P8_11', b.LOW)
+		}
+	} else if (val[1] == 'FAST2'){
+		if (val[0] == 1){
+			b.digitalWrite('P8_13', b.HIGH)
+		} else {
+			b.digitalWrite('P8_13', b.LOW)
+		}
+	} else if (val[1] == 'SLOW1'){
+		if (val[0] == 1){
+			b.digitalWrite('P8_15', b.HIGH)
+		} else {
+			b.digitalWrite('P8_15', b.LOW)
+		}
+	} else if (val[1] == 'SLOW2'){
+		if (val[0] == 1){
+			b.digitalWrite('P8_17', b.HIGH)
+		} else {
+			b.digitalWrite('P8_17', b.LOW)
+		}
+	}
 };
