@@ -57,30 +57,9 @@
 
 /* PRE-LOOP */
       QBBC SEMICLOSEDLOOP, r4.t0        // do semi-closed / closed loop if bit[0] (open/closed loop) clear
-      QBBC OPENLOOP, r4.t4              // if no autolock, skip to open loop
-      QBBS CLOSEDLOOP, r4.t18           // if autolock enabled && locked status: do closed loop
-
-    AUTOLOCK_TEST:
-      QBBC AUTOLOCK_BELOW, r4.t5        // test for autolock below
-      AUTOLOCK_ABOVE:                   // do closed loop if ADC reading >= autolock point
-        QBGT OPENLOOP, r9.w0, r11.w0    // do open loop if autolock condition not met  
-        QBA AUTOLOCK                    // else autolock
-      AUTOLOCK_BELOW:
-        QBLT OPENLOOP, r9.w0, r11.w0    // do open loop if autolock condition not met  
-    AUTOLOCK:
-        SUB r18, r9.w0, r11.w0          // set an initial value for previous error signal
-        CLR r4.t17                      // unprime semi-closed loop
-        SET r4.t18                      // set internal autolock status (perform closed loop)
-        SET r4.t0                       // temporarily set closed loop for adc_setup (LOAD_PARAMETERS will reset)
-        MOV r5, 0x0                     // reset accumulator
-        MOV r16, 0x0                    // reset integrator
-        JAL r23.w0, SETUP_ADC           // setup adc for closed loop
-        QBA CLOSEDLOOP
       
 /* OPEN LOOP */
     OPENLOOP:
-      CLR r4.t18                        // ensure internal autolock status clear (perform open loop)
-      
     /* OSCILLOSCOPE TRIGGER LOGIC */
       CLR r4.t29                          // clear write this step flag
       QBBC SCAN_LOGIC, r4.t30             // no need for writing if trigger not reached
@@ -289,7 +268,7 @@
 
 /* SPI SEND DATA TO DAC */
     ENDLOOP:
-      SPI_BUILDWORD:                    // prepare data for sending to DAC MAX5216      
+      SPI_BUILDWORD:                    // prepare data for sending to DAC AD5545      
         MOV r1, r7.w0
         SET r1.t17
 
@@ -359,14 +338,11 @@
                                         // bit[1]: INTEGRATOR RESET
                                         // bit[2]: AUTOMATIC INTEGRATOR RESET ON OVERFLOW / UNDERFLOW
                                         // bit[3]: LOCK SLOPE
-                                        // bit[4]: AUTO LOCK ENABLE
-                                        // bit[5]: AUTO LOCK ABOVE / BELOW POINT
                                         // bit[15]: ENABLE FAST DAC
 
                                         // internally set booleans stored in r4.w2
                                         // bit[16]: OPEN LOOP SCAN UP / DOWN
                                         // bit[17]: SEMI-CLOSED LOOP STATUS
-                                        // bit[18]: AUTOLOCK STATUS
                                         // bit[29]: OPEN LOOP WRITE THIS STEP
                                         // bit[30]: OPEN LOOP WRITE TRIGGER
                                         // bit[31]: WRITE OUT ENABLE
@@ -375,7 +351,7 @@
       LBBO r6.b3, r1, SLOW_ACCUM, 1     // load number of accumulations for slow DAC
       LBBO r10, r1, OPEN_POINT_AMPL, 4  // load open loop ramp scan point and amplitude
       LBBO r11, r1, XLOCK_YLOCK, 4      // w2: DAC set point (for scan to)
-                                        // w0: ADC set point / autolock point
+                                        // w0: ADC set point
 
       LBBO r12, r1, PGAIN2, 4           // load PGAIN2
       XOUT 10, r12, 4                   // store PGAIN2 in r12 broadside memory bank 10

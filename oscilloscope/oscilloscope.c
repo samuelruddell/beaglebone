@@ -183,14 +183,7 @@ unsigned int mysqlGetParameters(MYSQL *conn, unsigned int *pruSharedDataMemory_i
 				}
 				break;
 			case 24 :
-				if (mem_value==1){
-					pruBooleans |= 0x10;     		// autolock enable
-				}
-				break;
 			case 25 :
-				if (mem_value==1){
-					pruBooleans |= 0x20;     		// autolock above (1) / below (0)
-				}
 				break;
 
 			// pack XLOCK and YLOCK
