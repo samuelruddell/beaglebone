@@ -41,6 +41,7 @@
       JAL r23.w0, SETUP_ADC             // setup ADC subroutine 
 
 /* READ ADC AND PACK DATA */
+/*    
     WAIT:
       LBBO r2, r20, FIFOCOUNT, 4        // check for words in FIFO0
       QBEQ WAIT, r2, 0                  // WAIT until word present in FIFO0
@@ -54,13 +55,27 @@
 
     PACK:                               // pack DAC and ADC data into a single 32-bit register
       MOV r9.w2, r7.w0                  // DAC value
+*/
 
 /* PRE-LOOP */
+    BEGINLOOP:
       QBBC SEMICLOSEDLOOP, r4.t0        // do semi-closed / closed loop if bit[0] (open/closed loop) clear
       
 /* OPEN LOOP */
     OPENLOOP:
-    /* OSCILLOSCOPE TRIGGER LOGIC */
+      /* READ ADC AND PACK DATA */
+      OPEN_WAIT:
+        LBBO r2, r20, FIFOCOUNT, 4      // check for words in FIFO0
+        QBEQ OPEN_WAIT, r2, 0           // WAIT until word present in FIFO0
+    
+      OPEN_READ:
+        LBCO r8, c28, CYCLE, 4          // load in CYCLE COUNT
+        LBBO r9, r21, 0, 4              // load 4 bytes from FIFO into r9
+    
+      OPEN_PACK:                        // pack DAC and ADC data into a single 32-bit register
+        MOV r9.w2, r7.w0                // DAC value
+
+      /* OSCILLOSCOPE TRIGGER LOGIC */
       CLR r4.t29                          // clear write this step flag
       QBBC SCAN_LOGIC, r4.t30             // no need for writing if trigger not reached
       QBEQ OPEN_ACCUM_FULL, r6.w0, r6.w2  // if number of accumulations reached
@@ -109,22 +124,70 @@
       /* OPEN LOOP SPI OUT */
         SPI_OPEN_BUILDWORD:               // prepare data for sending to DAC AD5545
           MOV r1, r7.w0 
-          SET r1.t17
-  
-        SPI_OPEN_CHECK:                        
-          // LBBO r2, r22, SPI_CH0STAT, 4 // Check transmitter register status
-          // QBBC SPI_END, r2.t1          // skip if still transmitting previous data
+          SET r1.t17                      // target slow DAC output
   
         SPI_OPEN_SEND:
           SBBO r1, r22, SPI_TX0, 4        // word to transmit 
+
         SPI_OPEN_END:
           QBBS WRITEDATA, r4.t29
           QBBC ARM_INTERRUPT, r4.t31      // check interrupt if write disabled
           QBA INT_CHECK
 
+/* STORING DATA TO MEMORY AND INTERRUPT IN HANDLING */
+    WRITEDATA:
+      QBBC ARM_INTERRUPT, r4.t31        // skip write if disabled
+      SBCO r8, c25, r3.w0, 4            // store time in PRU_DATARAM_0, offset r3.w0
+      SBCO r9, c24, r3.w0, 4            // store packed data in PRU_DATARAM_1, offset r3.w0
+      ADD r3.w0, r3.w0, 4               // increment counter
+      QBA INT_CHECK                     // if writing enabled, no need for ARM interrupt check
+    
+    ARM_INTERRUPT:
+      QBBC LOAD_DATA, r31.t30           // skip this if no interrupt
+      SET r4.t31                        // enable writing
+      SET r25, 3                        // set bit 3 to enable CYCLE timer
+      SBCO r25, c28, 0, 4               // store CYCLE settings 
+    
+    CLEAR_ARM_INTERRUPT:
+      MOV r2, 1<<18                     // write 1 to clear event
+      MOV r1, SECR0                     // System Event Status Enable/Clear register
+      SBCO r2, c0, r1, 4                // c0 is interrupt controller
+      QBA INT_CHECK
+
+/* END OF LOOP AND INTERRUPT OUT HANDLING */
+    LOAD_DATA:
+      JAL r23.w0, LOAD_PARAMETERS       // load parameters
+
+    INT_CHECK:
+      QBNE BEGINLOOP, r3.w2, r3.w0      // check number of samples taken
+    
+    INTERRUPT:                          // when memory full
+      MOV r31.b0, PRU_INTERRUPT | PRU_EVTOUT_0
+    
+      CLR r25, 3                        // clear bit 3 to disable CYCLE
+      SBCO r25, c28, 0, 4               // store CYCLE settings
+      MOV r2, 0x0                       // 0x0 to reset CYCLE count to zero
+      SBCO r2, c28, CYCLE, 4            // clear CYCLE counter
+    
+      MOV r3.w0, 0                      // start from 0th memory address
+      AND r4.b3, r4.b3, 0b00011111      // CLR r4.t29-t31 to disable writing
+
+      QBA BEGINLOOP
+
 /* SEMI-CLOSED LOOP */
-      SEMICLOSEDLOOP:                   // Scan DAC to XLOCK before enabling closed loop 
-        QBBC CLOSEDLOOP, r4.t17         // no SEMI-CLOSED LOOP
+      SEMICLOSEDLOOP:                     // Scan DAC to XLOCK before enabling closed loop 
+        /* READ ADC AND PACK DATA */
+        WAIT:
+          LBBO r2, r20, FIFOCOUNT, 4      // check for words in FIFO0
+          QBEQ WAIT, r2, 0                // WAIT until word present in FIFO0
+    
+        READ:
+          LBBO r9, r21, 0, 4              // load 4 bytes from FIFO into r9
+    
+        PACK:                             // pack DAC and ADC data into a single 32-bit register
+          MOV r9.w2, r7.w0                // DAC value
+
+        QBBC CLOSEDLOOP, r4.t17           // no SEMI-CLOSED LOOP
         QBLT SEMI_SCANDOWN, r7.w0, r11.w2        
 
         SEMI_SCANUP:
@@ -149,6 +212,19 @@
 
 /* CLOSED LOOP */
     CLOSEDLOOP:
+    /* CALCULATE FAST PROPORTIONAL */
+      FAST_PROPORTIONAL:
+        XIN 11, r29, 4                  // move PGAIN to MAC
+        XOUT 0, r28, 8                  // multiply
+        XIN 0, r26, 8                   // load in product to r26 and r27
+        QBBC FAST_PPOS, r26.t31         // result is positive
+        FAST_PNEG:
+          RSB r15, r26, 0               // make negative result positive to prevent rounding to negative infinity
+          LSR r15, r15, 15              // round result correctly
+          RSB r15, r15, 0               // make result negative again
+          QBA INTEGRAL
+        FAST_PPOS:
+          LSR r15, r26, 15              // store lower product in r15 with LSR
 
     /* ACCUMULATION AVERAGING LOGIC */
         QBEQ ACCUM_PREP, r6.b2, 0x0     // skip accumulator if no accumulation called for
@@ -262,9 +338,8 @@
 
         ENDCLOSED:                      
           MOV r9.w2, r1.w0              // pack correct value for oscilloscope
-          LSL r1, r1.w0, 6              // ensure correct output to DAC, initial DAC value stored in r7
-          SET r1.t22
-          QBA SPI_CHECK
+          SET r1.t17
+          QBA SPI_SEND
 
 /* SPI SEND DATA TO DAC */
     ENDLOOP:
@@ -272,53 +347,13 @@
         MOV r1, r7.w0
         SET r1.t17
 
-      SPI_CHECK:                        
-        // LBBO r2, r22, SPI_CH0STAT, 4    // Check transmitter register status
-        // QBBC SPI_END, r2.t1             // skip if still transmitting previous data
-
       SPI_SEND:
         SBBO r1, r22, SPI_TX0, 4        // word to transmit 
       SPI_END:
 
-/* STORING DATA TO MEMORY AND INTERRUPT IN HANDLING */
-    WRITEDATA:
-      QBBC ARM_INTERRUPT, r4.t31        // skip write if disabled
-      SBCO r8, c25, r3.w0, 4            // store time in PRU_DATARAM_0, offset r3.w0
-      SBCO r9, c24, r3.w0, 4            // store packed data in PRU_DATARAM_1, offset r3.w0
-      ADD r3.w0, r3.w0, 4               // increment counter
-      QBA INT_CHECK                     // if writing enabled, no need for ARM interrupt check
-    
-    ARM_INTERRUPT:
-      QBBC LOAD_DATA, r31.t30           // skip this if no interrupt
-      SET r4.t31                        // enable writing
-      SET r25, 3                        // set bit 3 to enable CYCLE timer
-      SBCO r25, c28, 0, 4               // store CYCLE settings 
-    
-    CLEAR_ARM_INTERRUPT:
-      MOV r2, 1<<18                     // write 1 to clear event
-      MOV r1, SECR0                     // System Event Status Enable/Clear register
-      SBCO r2, c0, r1, 4                // c0 is interrupt controller
-      QBA INT_CHECK
+        JAL r23.w0, LOAD_CLOSED_PARAMETERS       // load parameters from memory subroutine
 
-/* END OF LOOP AND INTERRUPT OUT HANDLING */
-    LOAD_DATA:
-      JAL r23.w0, LOAD_PARAMETERS       // load parameters
-
-    INT_CHECK:
-      QBNE WAIT, r3.w2, r3.w0           // check number of samples taken
-    
-    INTERRUPT:                          // when memory full
-      MOV r31.b0, PRU_INTERRUPT | PRU_EVTOUT_0
-    
-      CLR r25, 3                        // clear bit 3 to disable CYCLE
-      SBCO r25, c28, 0, 4               // store CYCLE settings
-      MOV r2, 0x0                       // 0x0 to reset CYCLE count to zero
-      SBCO r2, c28, CYCLE, 4            // clear CYCLE counter
-    
-      MOV r3.w0, 0                      // start from 0th memory address
-      AND r4.b3, r4.b3, 0b00011111      // CLR r4.t29-t31 to disable writing
-    
-      QBA WAIT
+      QBA BEGINLOOP
 
 /* HANDLE DEINITIALIZATION AND QUIT */
     DEINIT:
@@ -346,20 +381,28 @@
                                         // bit[29]: OPEN LOOP WRITE THIS STEP
                                         // bit[30]: OPEN LOOP WRITE TRIGGER
                                         // bit[31]: WRITE OUT ENABLE
-      SET r4.t15                                  
 
       LBBO r6.b3, r1, SLOW_ACCUM, 1     // load number of accumulations for slow DAC
       LBBO r10, r1, OPEN_POINT_AMPL, 4  // load open loop ramp scan point and amplitude
       LBBO r11, r1, XLOCK_YLOCK, 4      // w2: DAC set point (for scan to)
                                         // w0: ADC set point
 
-      LBBO r12, r1, PGAIN2, 4           // load PGAIN2
-      XOUT 10, r12, 4                   // store PGAIN2 in r12 broadside memory bank 10
+      LBBO r29, r1, PGAIN2, 4           // load PGAIN2
+      XOUT 11, r29, 4                   // store PGAIN2 in r29 broadside memory bank 11
 
       LBBO r12, r1, PGAIN, 4            // load PGAIN
       LBBO r13, r1, IGAIN, 4            // load IGAIN
       LBBO r14, r1, DGAIN, 4            // load DGAIN
       LBBO r24, r1, IRESET_POS_NEG, 4   // load INTEGRATOR AUTO OVERFLOW AND UNDERFLOW VALUES
+
+      JMP r23.w0                        // RETURN
+
+    /* LOAD PARAMETERS FOR CLOSED LOOP ONLY */
+    LOAD_CLOSED_PARAMETERS:
+      MOV r1, 0x00010000                // PRUSS0_SHARED_MEMORY
+
+      LBBO r4.w0, r1, BOOLEANS, 2       // load externally set booleans into r4.w0
+      SET r4.t15
 
       JMP r23.w0                        // RETURN
 
