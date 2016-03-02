@@ -15,10 +15,10 @@ SPI1_RESET_CHECK:                       // wait for reset to complete
     QBBC SPI1_RESET_CHECK, r2.t0
 
 SPI1_CONFIGURE:
-    MOV r2, 0x0                         // configure module contral: Master mode
+    MOV r2, 0x0                         // configure module control: Master mode
     SBBO r2, r22, SPI_MODULCTRL, 4      
 
-    // configure SYSCONFIG
+                                        // configure SYSCONFIG
     MOV r2, 0b1100010001                // OCP & Functional clocks maintained
                                         // Smart-idle mode
                                         // Automatic OCP clock gating
