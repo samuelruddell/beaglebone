@@ -147,7 +147,7 @@ unsigned int mysqlGetParameters(MYSQL *conn, unsigned int *pruSharedDataMemory_i
 	unsigned int pruBooleans        = 0x0;
 	unsigned int xlock_ylock        = 0x0;
 	unsigned int open_point_ampl    = 0x0;
-	unsigned int ireset_pos_neg     = 0x0;
+	//unsigned int ireset_pos_neg     = 0x0;
 
 	mysql_query(conn, "SELECT addr, value FROM parameters");
 	result = mysql_store_result(conn);
@@ -209,10 +209,10 @@ unsigned int mysqlGetParameters(MYSQL *conn, unsigned int *pruSharedDataMemory_i
 
 			// pack AUTO INTEGRATOR OVERFLOW and UNDERFLOW
 			case 21 : 	
-				ireset_pos_neg |= ((mem_value & 0xffff) << 16); // POSITIVE OVERFLOW
+				//ireset_pos_neg |= ((mem_value & 0xffff) << 16); // POSITIVE OVERFLOW
 				break;
 			case 22 :
-				ireset_pos_neg |= (mem_value & 0xffff);         // NEGATIVE UNDERFLOW
+				//ireset_pos_neg |= (mem_value & 0xffff);         // NEGATIVE UNDERFLOW
 				break;
 
 			// do nothing (parameter not relevant to PRU program)
@@ -237,7 +237,7 @@ unsigned int mysqlGetParameters(MYSQL *conn, unsigned int *pruSharedDataMemory_i
 	*(pruSharedDataMemory_int + 1) = pruBooleans;           
 	*(pruSharedDataMemory_int + 2) = xlock_ylock;          
 	*(pruSharedDataMemory_int + 13) = open_point_ampl;    
-	*(pruSharedDataMemory_int + 21) = ireset_pos_neg;    
+	//*(pruSharedDataMemory_int + 21) = ireset_pos_neg;    
 
 	// clean up and return runScope
 	mysql_free_result(result);	

@@ -40,28 +40,11 @@
       JAL r23.w0, SETUP_SPI             // setup SPI subroutine  
       JAL r23.w0, SETUP_ADC             // setup ADC subroutine 
 
-/* READ ADC AND PACK DATA */
-/*    
-    WAIT:
-      LBBO r2, r20, FIFOCOUNT, 4        // check for words in FIFO0
-      QBEQ WAIT, r2, 0                  // WAIT until word present in FIFO0
-    
-    READ:
-      LBCO r8, c28, CYCLE, 4            // load in CYCLE COUNT
-      LBBO r9, r21, 0, 4                // load 4 bytes from FIFO into r9
-    
-    XFR_DATA:
-      XOUT 10, r4, 32                   // send booleans, ADC, lock point to PRU_0
-
-    PACK:                               // pack DAC and ADC data into a single 32-bit register
-      MOV r9.w2, r7.w0                  // DAC value
-*/
-
 /* PRE-LOOP */
     BEGINLOOP:
       QBBC SEMICLOSEDLOOP, r4.t0        // do semi-closed / closed loop if bit[0] (open/closed loop) clear
       
-/* OPEN LOOP */
+/* OPEN LOOP (SLOW DAC) */
     OPENLOOP:
       /* READ ADC AND PACK DATA */
       OPEN_WAIT:
@@ -198,12 +181,11 @@
           SUB r7, r7, 1
 
         SEMI_TRANSITION:
-          QBNE ENDLOOP, r11.w2, r7.w0   // continue semi-closed loop if values not equal
+          QBNE SEMICLOSEDLOOP, r11.w2, r7.w0      // continue semi-closed loop if values not equal
                                         // otherwise transition to closed loop
-          SUB r18, r9.w0, r11.w0        // set an initial value for previous error signal
+          SUB r19, r9.w0, r11.w0        // set an initial value for previous error signal
           CLR r4.t17                    // unprime semi-closed loop
           MOV r6.b2, r6.b3              // prepare slow accumulator
-          MOV r5, 0x0
           MOV r6.w0, 0x0
           
           MOV r16, 0x0                  // reset integrator
@@ -214,142 +196,19 @@
     CLOSEDLOOP:
     /* CALCULATE FAST PROPORTIONAL */
       FAST_PROPORTIONAL:
-        XIN 11, r29, 4                  // move PGAIN to MAC
         XOUT 0, r28, 8                  // multiply
         XIN 0, r26, 8                   // load in product to r26 and r27
         QBBC FAST_PPOS, r26.t31         // result is positive
         FAST_PNEG:
-          RSB r15, r26, 0               // make negative result positive to prevent rounding to negative infinity
-          LSR r15, r15, 15              // round result correctly
-          RSB r15, r15, 0               // make result negative again
-          QBA INTEGRAL
+          RSB r26, r26, 0               // make negative result positive to prevent rounding to negative infinity
+          LSR r26, r26, 15              // round result correctly
+          RSB r26, r26, 0               // make result negative again
+          QBA SPI
         FAST_PPOS:
-          LSR r15, r26, 15              // store lower product in r15 with LSR
+          LSR r26, r26, 15              // store lower product in r26 with LSR
 
-    /* ACCUMULATION AVERAGING LOGIC */
-        QBEQ ACCUM_PREP, r6.b2, 0x0     // skip accumulator if no accumulation called for
-        ADD r5, r5, r9.w0               // add current ADC reading to accumulator
-        ADD r6.w0, r6.w0, 1             // increase accumulation
-        QBBS ACCUM_FULL, r6, r6.b2      // if number of accumulations reached (powers of 2)
-        QBA LOAD_DATA                   // skip gain calculation, SPI out, memory storing and interrupt handling
-
-        ACCUM_FULL:
-          LSR r5, r5, r6.b2             // average all values in r5 (floor remainder)
-          MOV r9.w0, r5.w0              // move averaged ADC value to r9.w0 for processing
-          MOV r5, 0x0                   // clear accumulator
-          MOV r6.w0, 0x0                // clear accumulator counts
-
-        ACCUM_PREP:
-          MOV r6.b2, r6.b3              // number of averages may have changed due to LOAD_PARAMETERS
-
-    /* PID LOGIC */
-      PERFORM_CLOSED_LOOP:
-        SUB r19, r9.w0, r11.w0          // calculate error signal as ADC - YLOCK
-        MOV r28, r19                    // error signal value to MAC as operand 1
-
-      PROPORTIONAL:
-        MOV r29, r12                    // move PGAIN to MAC
-        XOUT 0, r28, 8                  // multiply
-        XIN 0, r26, 8                   // load in product to r26 and r27
-        QBBC PPOS, r26.t31              // result is positive
-        PNEG:
-          RSB r15, r26, 0               // make negative result positive to prevent rounding to negative infinity
-          LSR r15, r15, 15              // round result correctly
-          RSB r15, r15, 0               // make result negative again
-          QBA INTEGRAL
-        PPOS:
-          LSR r15, r26, 15              // store lower product in r15 with LSR
-
-      INTEGRAL:
-        QBBS INTEGRAL_RESET, r4.t1      // skip this if integrator reset active
-        MOV r29, r13                    // move IGAIN to MAC
-        XOUT 0, r28, 8                  // multiply
-        XIN 0, r26, 8                   // load in product to r26 and r27
-        QBBC IPOS, r26.t31              // result is positive
-        INEG:
-          RSB r2, r26, 0                // make negative result positive to prevent rounding to negative infinity
-          LSR r2, r2, 15                // round result correctly
-          RSB r2, r2, 0                 // make result negative again
-          QBA INTEGRATE
-        IPOS:
-          LSR r2, r26, 15               // store lower product in r2 with LSR
-
-        INTEGRATE:
-          ADD r16, r16, r2              // integrate into r16
-
-        QBBS AUTO_INT_RESET_TEST, r4.t2         // if auto integrator reset enabled, check for that instead
-        INT_OVERFLOW_TEST:                      // test for integrator overflow
-          QBEQ DERIVATIVE, r16.w2, 0            // no overflow or underflow
-          QBBS INT_UNDERFLOW, r16.t31           // number is negative, check for underflow
-          INT_OVERFLOW:
-            MOV r16, 0xffff                     // overflow occurred, set max output
-            QBA DERIVATIVE
-          INT_UNDERFLOW:
-            MOV r2, 0xffff                      // to test for underflow
-            QBEQ DERIVATIVE, r16.w2, r2.w0      // number is just negative, no underflow here
-            MOV r16, 0xffff0000                 // min output, twos complement
-          QBA DERIVATIVE
-
-        AUTO_INT_RESET_TEST:                    // test for integrator overflow
-          QBBS AUTO_UNDERFLOW, r16.t31          // integrator is negative, test for underflow
-          AUTO_OVERFLOW:
-            QBGT DERIVATIVE, r16.w0, r24.w2     // no overflow
-            QBA INTEGRAL_RESET                  // overflow has occurred, reset integrator
-          AUTO_UNDERFLOW:
-            QBLT DERIVATIVE, r16.w0, r24.w0     // no underflow
-                                                // else underflow has occurred, reset integrator
-        INTEGRAL_RESET:
-          MOV r16, 0x0                  // integrator reset
-
-      DERIVATIVE:
-        SUB r28, r19, r18               // calculate derivative
-        MOV r29, r14                    // move DGAIN to MAC
-        XOUT 0, r28, 8                  // multiply
-        XIN 0, r26, 8                   // load in product to r26 and r27
-        QBBC DPOS, r26.t31              // result is positive
-        DNEG:
-          RSB r17, r26, 0               // make negative result positive to prevent rounding to negative infinity
-          LSR r17, r17, 15              // round result correctly
-          RSB r17, r17, 0               // make result negative again
-          QBA DERIV_END
-        DPOS:
-          LSR r17, r26, 15              // store lower product in r15 with LSR
-
-        DERIV_END:
-          MOV r18, r19                  // error signal to previous error signal
-
-      COMBINE_PID:
-        ADD r2, r15, r16                // ADD P_RESULT and I_RESULT
-        ADD r2, r2, r17                 // ADD D_RESULT
-        QBBS CLOSED_LOOP_OUT, r4.t3     // skip below step if locking to positive slope 
-        RSB r2, r2, 0                   // Reverse Unsigned Integer Subtract r2 = 0 - r2
-
-        CLOSED_LOOP_OUT:
-          ADD r1, r7.w0, r2             // ADD PID result to DAC output
-        
-        OVERFLOW_TEST:                  // test for PID overflow
-          QBEQ ENDCLOSED, r1.w2, 0      // no overflow or underflow
-          QBBS UNDERFLOW, r1.t31        // number is negative therefore underflow
-          OVERFLOW:
-            MOV r1, 0xffff              // max output
-            QBA ENDCLOSED
-          UNDERFLOW:
-            MOV r1, 0x0                 // min output
-
-        ENDCLOSED:                      
-          MOV r9.w2, r1.w0              // pack correct value for oscilloscope
-          SET r1.t17
-          QBA SPI_SEND
-
-/* SPI SEND DATA TO DAC */
-    ENDLOOP:
-      SPI_BUILDWORD:                    // prepare data for sending to DAC AD5545      
-        MOV r1, r7.w0
-        SET r1.t17
-
-      SPI_SEND:
-        SBBO r1, r22, SPI_TX0, 4        // word to transmit 
-      SPI_END:
+      SPI:
+          // here handle spi out
 
         JAL r23.w0, LOAD_CLOSED_PARAMETERS       // load parameters from memory subroutine
 
@@ -388,12 +247,10 @@
                                         // w0: ADC set point
 
       LBBO r29, r1, PGAIN2, 4           // load PGAIN2
-      XOUT 11, r29, 4                   // store PGAIN2 in r29 broadside memory bank 11
 
       LBBO r12, r1, PGAIN, 4            // load PGAIN
       LBBO r13, r1, IGAIN, 4            // load IGAIN
       LBBO r14, r1, DGAIN, 4            // load DGAIN
-      LBBO r24, r1, IRESET_POS_NEG, 4   // load INTEGRATOR AUTO OVERFLOW AND UNDERFLOW VALUES
 
       JMP r23.w0                        // RETURN
 
