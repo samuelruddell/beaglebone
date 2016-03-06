@@ -107,13 +107,14 @@ int main (int argc, char **argv)
 		}
 
 		/* sleep for performance reasons */
-		sleep(0.5);
+		sleep(1);
 
 		/* Load settings and write to PRU memory */
 		runScope = mysqlGetParameters(conn, pruSharedDataMemory_int);
 	}
 
 	/* Disable PRU and close memory mappings */
+	prussdrv_pru_disable(PRU_0);
 	prussdrv_pru_disable(PRU_1);
 	prussdrv_exit ();
 

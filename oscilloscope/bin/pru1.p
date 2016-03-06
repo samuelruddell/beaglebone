@@ -43,6 +43,18 @@
 /* PRE-LOOP */
     BEGINLOOP:
       QBBC SEMICLOSEDLOOP, r4.t0        // do semi-closed / closed loop if bit[0] (open/closed loop) clear
+      QBBS OPENLOOP, r4.t17             // do open loop transition for first time open loop
+
+/* OPEN LOOP TRANSITION */
+    TRANSIT_OPEN:
+      MOV r25, 0x8000                   // reset fast output to 0x8000
+      SET r25.t16
+      SBBO r25, r22, SPI_TX0, 4         // send to fast DAC 
+
+      MOV r25, r10.w2                   // reset slow output to SCAN POINT
+      SET r25.t17               
+      SBBO r25, r22, SPI_TX0, 4         // send to slow DAC 
+
       
 /* OPEN LOOP (SLOW DAC) */
     OPENLOOP:
@@ -204,7 +216,7 @@
           RSB r26, r26, 0               // make result negative again
           QBA SPI
         FAST_PPOS:
-          LSR r26, r26, 15              // store lower product in r26 with LSR
+          LSR r26, r26, 15              // round result
 
       SPI:                              // prepare data for sending to DAC AD5545      
         MOV r25, 0x8000

@@ -108,7 +108,7 @@ AWAIT:
         RSB r2, r2, 0                   // Reverse Unsigned Integer Subtract r2 = 0 - r2
 
         CLOSED_LOOP_OUT:
-          ADD r21, r7.w0, r2            // ADD PID result to DAC output
+          ADD r21, r11.w2, r2           // ADD PID result to DAC output
         
         OVERFLOW_TEST:                  // test for PID overflow
           QBEQ SPI_BUILDWORD, r21.w2, 0 // no overflow or underflow
@@ -121,7 +121,7 @@ AWAIT:
 
 /* SPI SEND DATA TO DAC */
       SPI_BUILDWORD:                    // prepare data for sending to DAC AD5545      
-        SET r21.t17
+        SET r21.t17                     // designates slow DAC
 
       QBEQ SPI_END, r20, r21            // no need to use SPI if result is the same
       SPI_SEND:
