@@ -63,7 +63,7 @@
       QBBC SCAN_LOGIC, r4.t30             // no need for writing if trigger not reached
       QBEQ OPEN_ACCUM_FULL, r6.w0, r6.w2  // if number of accumulations reached
       ADD r6.w0, r6.w0, 1                 // increase accumulation
-      QBA SCAN_LOGIC                      // skip gain calculation, SPI out, memory storing and interrupt handling
+      QBA SCAN_LOGIC                      // skip write step
 
       OPEN_ACCUM_FULL:
         MOV r6.w0, 0x0                  // clear accumulator counts
@@ -181,19 +181,18 @@
           SUB r7, r7, 1
 
         SEMI_TRANSITION:
-          QBNE SEMICLOSEDLOOP, r11.w2, r7.w0      // continue semi-closed loop if values not equal
-                                        // otherwise transition to closed loop
-          SUB r19, r9.w0, r11.w0        // set an initial value for previous error signal
+          QBNE SEMICLOSEDLOOP, r11.w2, r7.w0    // continue semi-closed loop if values not equal
+                                                // otherwise transition to closed loop
           CLR r4.t17                    // unprime semi-closed loop
           MOV r6.b2, r6.b3              // prepare slow accumulator
           MOV r6.w0, 0x0
           
-          MOV r16, 0x0                  // reset integrator
-
           JAL r23.w0, SETUP_ADC         // setup adc for closed loop
 
 /* CLOSED LOOP */
     CLOSEDLOOP:
+      XOUT 10, r4, 44                   // send data to PRU 0
+
     /* CALCULATE FAST PROPORTIONAL */
       FAST_PROPORTIONAL:
         XOUT 0, r28, 8                  // multiply
@@ -207,10 +206,18 @@
         FAST_PPOS:
           LSR r26, r26, 15              // store lower product in r26 with LSR
 
-      SPI:
-          // here handle spi out
+      SPI:                              // prepare data for sending to DAC AD5545      
+        MOV r25, 0x8000
+        ADD r25, r25, r26.w0            // calculate DAC output
+        SET r25.t16
 
-        JAL r23.w0, LOAD_CLOSED_PARAMETERS       // load parameters from memory subroutine
+      QBEQ SPI_END, r25, r24            // no need to use SPI if result is the same
+      SPI_SEND:
+        SBBO r25, r22, SPI_TX0, 4       // word to transmit 
+      SPI_END:
+        MOV r24, r25                    // set previous DAC value
+
+        JAL r23.w0, LOAD_BOOLS          // load parameters from memory subroutine
 
       QBA BEGINLOOP
 
@@ -246,21 +253,18 @@
       LBBO r11, r1, XLOCK_YLOCK, 4      // w2: DAC set point (for scan to)
                                         // w0: ADC set point
 
-      LBBO r29, r1, PGAIN2, 4           // load PGAIN2
-
       LBBO r12, r1, PGAIN, 4            // load PGAIN
       LBBO r13, r1, IGAIN, 4            // load IGAIN
       LBBO r14, r1, DGAIN, 4            // load DGAIN
+      LBBO r29, r1, PGAIN2, 4           // load PGAIN (FAST)
 
       JMP r23.w0                        // RETURN
 
     /* LOAD PARAMETERS FOR CLOSED LOOP ONLY */
-    LOAD_CLOSED_PARAMETERS:
+    LOAD_BOOLS:
       MOV r1, 0x00010000                // PRUSS0_SHARED_MEMORY
-
       LBBO r4.w0, r1, BOOLEANS, 2       // load externally set booleans into r4.w0
       SET r4.t15
-
       JMP r23.w0                        // RETURN
 
   /* SETUP SPI*/

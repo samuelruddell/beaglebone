@@ -12,24 +12,23 @@
 INIT:
     ZERO 0, 124                         // ensure all registers zero
     MOV r22, MCSPI0_                    // SPI address
-    SET r1.t16                          // set SPI channel on SPI SEND
 
 /* AWAIT ADC READING */
 AWAIT:
-    XIN 10, r4, 32                      // LOAD data from PRU_1
+    XIN 10, r4, 44                      // LOAD data from PRU_1
     QBBC AWAIT, r4.t15                  // check whether DAC enabled
 
      /* ACCUMULATION AVERAGING LOGIC */
         QBEQ ACCUM_PREP, r6.b2, 0x0     // skip accumulator if no accumulation called for
-        ADD r5, r5, r9.w0               // add current ADC reading to accumulator
+        ADD r3, r3, r9.w0               // add current ADC reading to accumulator
         ADD r6.w0, r6.w0, 1             // increase accumulation
         QBBS ACCUM_FULL, r6, r6.b2      // if number of accumulations reached (powers of 2)
-        //QBA LOAD_DATA                   // skip gain calculation, SPI out, memory storing and interrupt handling
+        QBA AWAIT                       // more readings needed for accumulation averaging
 
         ACCUM_FULL:
-          LSR r5, r5, r6.b2             // average all values in r5 (floor remainder)
-          MOV r9.w0, r5.w0              // move averaged ADC value to r9.w0 for processing
-          MOV r5, 0x0                   // clear accumulator
+          LSR r3, r3, r6.b2             // average all values in r3 (floor remainder)
+          MOV r9.w0, r3.w0              // move averaged ADC value to r9.w0 for processing
+          MOV r3, 0x0                   // clear accumulator
           MOV r6.w0, 0x0                // clear accumulator counts
 
         ACCUM_PREP:
@@ -109,39 +108,33 @@ AWAIT:
         RSB r2, r2, 0                   // Reverse Unsigned Integer Subtract r2 = 0 - r2
 
         CLOSED_LOOP_OUT:
-          ADD r1, r7.w0, r2             // ADD PID result to DAC output
+          ADD r21, r7.w0, r2            // ADD PID result to DAC output
         
         OVERFLOW_TEST:                  // test for PID overflow
-          QBEQ ENDCLOSED, r1.w2, 0      // no overflow or underflow
-          QBBS UNDERFLOW, r1.t31        // number is negative therefore underflow
+          QBEQ SPI_BUILDWORD, r21.w2, 0 // no overflow or underflow
+          QBBS UNDERFLOW, r21.t31       // number is negative therefore underflow
           OVERFLOW:
-            MOV r1, 0xffff              // max output
-            QBA ENDCLOSED
+            MOV r21, 0xffff             // max output
+            QBA SPI_BUILDWORD
           UNDERFLOW:
-            MOV r1, 0x0                 // min output
-
-        ENDCLOSED:                      
-          MOV r9.w2, r1.w0              // pack correct value for oscilloscope
-          SET r1.t17
-          QBA SPI_SEND
+            MOV r21, 0x0                // min output
 
 /* SPI SEND DATA TO DAC */
-    ENDLOOP:
       SPI_BUILDWORD:                    // prepare data for sending to DAC AD5545      
-        MOV r1, r7.w0
-        SET r1.t17
+        SET r21.t17
 
+      QBEQ SPI_END, r20, r21            // no need to use SPI if result is the same
       SPI_SEND:
-        SBBO r1, r22, SPI_TX0, 4        // word to transmit 
+        SBBO r21, r22, SPI_TX0, 4       // word to transmit 
       SPI_END:
 
 /* PREPARE FOR NEXT CALCULATION */
 PREPARE_NEXT:
     SUB r18, r9.w0, r11.w0              // error signal becomes previous error signal
-    MOV r29, r12                        // PGAIN to MPY
+    MOV r20, r21                        // DAC value to previous DAC value
 
-    CLR r4.t15                          // disable DAC until triggered by PRU_1
-    XOUT 10, r4, 4
+    CLR r4.t15                          // disable until triggered by PRU_1
+    XOUT 10, r4, 4                      // store bools to broadside memory
     QBA AWAIT
 
 QUIT:
