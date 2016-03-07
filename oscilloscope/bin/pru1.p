@@ -35,7 +35,7 @@
       SBCO r25, c28, 0, 4               // store CYCLE settings
 
       JAL r23.w0, LOAD_PARAMETERS       // load parameters from memory subroutine
-      MOV r7, r2.w2                     // Start DAC at scan point
+      MOV r7, r10.w2                    // Start DAC at scan point
 
       JAL r23.w0, SETUP_SPI             // setup SPI subroutine  
       JAL r23.w0, SETUP_ADC             // setup ADC subroutine 
@@ -47,17 +47,26 @@
 
 /* OPEN LOOP TRANSITION */
     TRANSIT_OPEN:
-      MOV r25, 0x8000                   // reset fast output to 0x8000
-      SET r25.t16
-      SBBO r25, r22, SPI_TX0, 4         // send to fast DAC 
+      JAL r23.w0, LOAD_PARAMETERS       // load parameters from memory subroutine
+      MOV r7, r10.w2                    // Start DAC at scan point
+      JAL r23.w0, SETUP_ADC             // setup ADC subroutine  
 
-      MOV r25, r10.w2                   // reset slow output to SCAN POINT
-      SET r25.t17               
-      SBBO r25, r22, SPI_TX0, 4         // send to slow DAC 
+      MOV r2, 0x8000                    // reset fast output to 0x8000
+      SET r2.t16
+      SBBO r2, r22, SPI_TX0, 4
 
-      
+      MOV r2, r10.w2                    // reset slow output to SCAN POINT
+      SET r2.t17               
+      SBBO r2, r22, SPI_TX0, 4
+
+      MOV r3.w0, 0                      // clear step counter register
+      CLR r4.t31                        // disable writing until ready
+
+      SET r4.t17                        // prime semi-closed loop
+
 /* OPEN LOOP (SLOW DAC) */
     OPENLOOP:
+
       /* READ ADC AND PACK DATA */
       OPEN_WAIT:
         LBBO r2, r20, FIFOCOUNT, 4      // check for words in FIFO0
@@ -116,6 +125,7 @@
         SET r4.t17                      // prime semiclosed loop
 
       ENDOPENLOOP:
+      
       /* OPEN LOOP SPI OUT */
         SPI_OPEN_BUILDWORD:               // prepare data for sending to DAC AD5545
           MOV r1, r7.w0 
@@ -219,15 +229,15 @@
           LSR r26, r26, 15              // round result
 
       SPI:                              // prepare data for sending to DAC AD5545      
-        MOV r25, 0x8000
-        ADD r25, r25, r26.w0            // calculate DAC output
-        SET r25.t16
+        MOV r2, 0x8000
+        ADD r2, r25, r26.w0             // calculate DAC output
+        SET r2.t16
 
-      QBEQ SPI_END, r25, r24            // no need to use SPI if result is the same
+      QBEQ SPI_END, r2, r24             // no need to use SPI if result is the same
       SPI_SEND:
-        SBBO r25, r22, SPI_TX0, 4       // word to transmit 
+        SBBO r2, r22, SPI_TX0, 4        // word to transmit 
       SPI_END:
-        MOV r24, r25                    // set previous DAC value
+        MOV r24, r2                     // set previous DAC value
 
         JAL r23.w0, LOAD_BOOLS          // load parameters from memory subroutine
 
