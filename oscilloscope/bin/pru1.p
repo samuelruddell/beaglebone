@@ -208,6 +208,7 @@
           CLR r4.t17                    // unprime semi-closed loop
           MOV r6.b2, r6.b3              // prepare slow accumulator
           MOV r6.w0, 0x0
+          MOV r24, 0x8000               // initialise previous fast DAC value
           
           JAL r23.w0, SETUP_ADC         // setup adc for closed loop
 
@@ -230,15 +231,15 @@
 
       SPI:                              // prepare data for sending to DAC AD5545      
         MOV r2, 0x8000
-        ADD r2, r25, r26.w0             // calculate DAC output
+        ADD r2, r2, r26.w0              // calculate DAC output
         SET r2.t16
 
       QBEQ SPI_END, r2, r24             // no need to use SPI if result is the same
       SPI_SEND:
         SBBO r2, r22, SPI_TX0, 4        // word to transmit 
-      SPI_END:
         MOV r24, r2                     // set previous DAC value
 
+      SPI_END:
         JAL r23.w0, LOAD_BOOLS          // load parameters from memory subroutine
 
       QBA BEGINLOOP
