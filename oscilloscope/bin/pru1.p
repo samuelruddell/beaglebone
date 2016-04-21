@@ -52,11 +52,11 @@
       JAL r23.w0, SETUP_ADC             // setup ADC subroutine  
 
       MOV r2, 0x8000                    // reset fast output to 0x8000
-      SET r2.t16
+      MOV r2.w2, 0x1                    // SET r2.t16
       SBBO r2, r22, SPI_TX0, 4
 
       MOV r2, r10.w2                    // reset slow output to SCAN POINT
-      SET r2.t17               
+      MOV r2.w2, 0x2                    // SET r2.t17               
       SBBO r2, r22, SPI_TX0, 4
 
       MOV r3.w0, 0                      // clear step counter register
@@ -129,7 +129,7 @@
       /* OPEN LOOP SPI OUT */
         SPI_OPEN_BUILDWORD:               // prepare data for sending to DAC AD5545
           MOV r1, r7.w0 
-          SET r1.t17                      // target slow DAC output
+          MOV r1.w2, 0x2                // SET r1.t17 -- target slow DAC output
   
         SPI_OPEN_SEND:
           SBBO r1, r22, SPI_TX0, 4        // word to transmit 
@@ -218,6 +218,7 @@
 
     /* CALCULATE FAST PROPORTIONAL */
       FAST_PROPORTIONAL:
+        MOV r28, r9.w0
         XOUT 0, r28, 8                  // multiply
         XIN 0, r26, 8                   // load in product to r26 and r27
         QBBC FAST_PPOS, r26.t31         // result is positive
@@ -232,7 +233,7 @@
       SPI:                              // prepare data for sending to DAC AD5545      
         MOV r2, 0x8000
         ADD r2, r2, r26.w0              // calculate DAC output
-        SET r2.t16
+        MOV r2.w2, 0x1                  // SET r2.t16
 
       QBEQ SPI_END, r2, r24             // no need to use SPI if result is the same
       SPI_SEND:
