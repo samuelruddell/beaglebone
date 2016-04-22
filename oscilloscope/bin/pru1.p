@@ -210,6 +210,7 @@
         SEMI_TRANSITION:
           QBNE SEMICLOSEDLOOP, r11.w2, r7.w0    // continue semi-closed loop if values not equal
                                                 // otherwise transition to closed loop
+          XOUT 10, r4, 4                // XOUT to PRU0 with r4.t17 set to trigger integrator reset
           CLR r4.t17                    // unprime semi-closed loop
           MOV r6.b2, r6.b3              // prepare slow accumulator
           MOV r6.w0, 0x0

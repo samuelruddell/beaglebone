@@ -16,6 +16,7 @@ INIT:
 /* AWAIT ADC READING */
 AWAIT:
     XIN 10, r4, 44                      // LOAD data from PRU_1
+    QBBS CLR_INTEGRATOR, r4.t17         // currently at semiclosed loop: clear integrator
     QBBC AWAIT, r4.t15                  // check whether DAC enabled
 
      /* ACCUMULATION AVERAGING LOGIC */
@@ -139,3 +140,8 @@ PREPARE_NEXT:
 
 QUIT:
     HALT
+
+/* SUBROUTINES */
+CLR_INTEGRATOR:
+    MOV r16, 0x0                        // clear integrator before closed loop starts
+    QBA AWAIT
