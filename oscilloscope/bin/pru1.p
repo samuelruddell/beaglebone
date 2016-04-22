@@ -223,7 +223,7 @@
 
     /* CALCULATE FAST PROPORTIONAL */
       FAST_PROPORTIONAL:
-        MOV r28, r9.w0
+        SUB r28, r9.w0, r11.w0          // calculate error signal as ADC - YLOCK
         XOUT 0, r28, 8                  // multiply
         XIN 0, r26, 8                   // load in product to r26 and r27
         QBBC FAST_PPOS, r26.t31         // result is positive
