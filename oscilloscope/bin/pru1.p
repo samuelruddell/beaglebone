@@ -197,10 +197,15 @@
 
         SEMI_SCANUP:
           ADD r7, r7, 1
-          QBA SEMI_TRANSITION
+          QBA SEMI_SPI
 
         SEMI_SCANDOWN:
           SUB r7, r7, 1
+
+        SEMI_SPI:
+          MOV r2, r7.w0                     // send SEMICLOSED DAC value to SPI
+          MOV r2.w2, 0x2                    // SET r2.t17               
+          SBBO r2, r22, SPI_TX0, 4
 
         SEMI_TRANSITION:
           QBNE SEMICLOSEDLOOP, r11.w2, r7.w0    // continue semi-closed loop if values not equal
