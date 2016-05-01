@@ -38,14 +38,29 @@ $(document).ready(function() {
 
 /* Plot data with flot */
 socket.on('data', function (data) {
-  $.plot("#oscilloscope", [data.data], {
-    series: {
-      shadowSize: 0     // Drawing is faster without shadows
-    },
-    grid: {
-      clickable: true	// Allow mouse click to determine lock point
-    }
-  });
+  if($('#MODE').val() == "2"){
+    // plot lockpoint as red circle
+    var lockPoint = [[$('#XLOCK').val(), $('#YLOCK').val()]];
+    $.plot("#oscilloscope", [data.data, {data:lockPoint, points:{show:true}, color:"#ff0000"}, {
+      series: {
+        shadowSize: 0     // Drawing is faster without shadows
+      },
+      grid: {
+        clickable: true	// Allow mouse click to determine lock point
+      }
+    });
+  } else {
+    // just plot line series
+    $.plot("#oscilloscope", [data.data], {
+      series: {
+        shadowSize: 0     // Drawing is faster without shadows
+      },
+      grid: {
+        clickable: true	// Allow mouse click to determine lock point
+      }
+    });
+  }
+
 });
 
 /* handle oscilloscope mouse click */
