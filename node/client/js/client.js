@@ -51,10 +51,16 @@ socket.on('data', function (data) {
 /* handle oscilloscope mouse click */
 $(function() {
   $("#oscilloscope").bind("plotclick", function (event, pos, item) {
-    document.getElementById('XLOCK').value = pos.x.toFixed(0);
-    $('#XLOCK').trigger('change')
-    document.getElementById('YLOCK').value = pos.y.toFixed(0);
-    $('#YLOCK').trigger('change')
+    if($('#MODE').val() == "2"){
+      // only update XLOCK when X-Y mode
+      document.getElementById('XLOCK').value = pos.x.toFixed(0);
+      $('#XLOCK').trigger('change')
+    }
+    if($('#MODE').val() == "1" | $('#MODE').val() == "2"){
+      // only update YLOCK on TIME-Y or X-Y mode
+      document.getElementById('YLOCK').value = pos.y.toFixed(0);
+      $('#YLOCK').trigger('change')
+    }
   });
 });
 
