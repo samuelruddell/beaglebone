@@ -91,9 +91,9 @@ int main (int argc, char **argv)
 				time[i] = *(pru0DataMemory_int + i);	// 32-bit time value
 				data[i] = *(pru1DataMemory_int + i);	// 16-bit DAC value << 16 | 12-bit ADC value
 				if (i<2047){
-					mysqlStrPointer += sprintf(mysqlStrPointer, "(%hu,%u,%hu,%hu),", i, time[i], data[i] >> 16, data[i] & 0x0fff);
+					mysqlStrPointer += sprintf(mysqlStrPointer, "(%hu,%u,%hu,%hu),", i, time[i] - time[0], data[i] >> 16, data[i] & 0x0fff);
 				} else {
-					mysqlStrPointer += sprintf(mysqlStrPointer, "(%hu,%u,%hu,%hu)", i, time[i], data[i] >> 16, data[i] & 0x0fff);
+					mysqlStrPointer += sprintf(mysqlStrPointer, "(%hu,%u,%hu,%hu)", i, time[i] - time[0], data[i] >> 16, data[i] & 0x0fff);
 				}	
 			}
 
