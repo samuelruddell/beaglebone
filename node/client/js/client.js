@@ -28,7 +28,7 @@ $(document).ready(function() {
     $.post("/params/", param, getParams) 
   });
 
-  /* listen for dropdown changes and POST */
+  // listen for dropdown changes and POST
   $('select').change(function() {
     var param = JSON.stringify({name: $(this).attr('id'), value: $(this).val()})
     // POST data, GET parameters as callback	
@@ -60,7 +60,15 @@ $(function() {
 
 
 /* only to test for now */
-function run()  {
+function openClose()  {
+  if($('#OPENCLOSE').attr("value") == "1"){
+    // toggle to closed loop
+    var param = JSON.stringify({name: "OPENCLOSE", value: "0"})
+  } else {
+    // toggle to open loop
+    var param = JSON.stringify({name: "OPENCLOSE", value: "1"})
+  }
+  $.post("/params/", param, getParams) 
 }
 
 /* GET parameters and insert into form */
@@ -74,6 +82,12 @@ function getParams() {
 	  element.checked = data[obj].value	// checkbox
 	} else if (data[obj].name == 'PGAIN' | data[obj].name == 'IGAIN' | data[obj].name == 'DGAIN' | data[obj].name == 'PGAIN2'){
       	  element.value = (data[obj].value/16384).toFixed(4)/2	// represent number in decimal notation
+	} else if (data[obj].name == 'OPENCLOSE'){
+	  if(data[obj].value){
+	    $('#OPENCLOSE').text('OPEN LOOP').addClass("btn-success").removeClass("btn-danger").val("1");
+	  } else {
+	    $('#OPENCLOSE').text('CLOSED LOOP').addClass("btn-danger").removeClass("btn-success").val("0");
+	  }
 	} else { 
       	  element.value = data[obj].value	// number field
 	}
