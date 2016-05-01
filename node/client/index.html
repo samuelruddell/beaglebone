@@ -35,21 +35,25 @@
 	      <form class="form-inline" autocomplete="off">
 		<div class="form-group">
 
-		  <div class="col-xs-4">
-		    <label for="OPENAMPL" class="control-label">open loop amplitude</label>
-		  </div>
-		  <div class="col-xs-8">
-		    <div class="input-group">
-		      <input type="number" class="form-control" id="OPENAMPL" placeholder="">
+		  <div class="row">
+    		    <div class="col-xs-4">
+		      <label for="OPENAMPL" class="control-label">amplitude</label>
+		    </div>
+		    <div class="col-xs-8">
+		      <div class="input-group">
+		        <input type="number" class="form-control" id="OPENAMPL" placeholder="">
+		      </div>
 		    </div>
 		  </div>
 
-		  <div class="col-xs-4">
-		    <label for="SCANPOINT" class="control-label">open loop scan point</label>
-		  </div>
-		  <div class="col-xs-8">
-		    <div class="input-group">
-		      <input type="number" class="form-control" id="SCANPOINT" placeholder="">
+		  <div class="row">
+		    <div class="col-xs-4">
+		      <label for="SCANPOINT" class="control-label">scan point</label>
+		    </div>
+		    <div class="col-xs-8">
+		      <div class="input-group">
+		        <input type="number" class="form-control" id="SCANPOINT" placeholder="">
+		      </div>
 		    </div>
 		  </div>
 
@@ -63,84 +67,102 @@
 	      <form class="form-inline" autocomplete="off">
 		<div class="form-group">
 
-		  <div class="col-xs-4">
-		    <label for="IRESET" class="control-label">integrator reset</label>
-		  </div>
-		  <div class="col-xs-8">
-		    <div class="input-group">
-		      <input type="checkbox" value="" id="IRESET">
+		  <div class="row">
+		    <div class="col-xs-6"  >
+		      <label for="IRESET" class="control-label">integrator reset</label>
+		    </div>
+		    <div class="col-xs-4">
+		      <div class="input-group">
+		        <input type="checkbox" value="" id="IRESET">
+		      </div>
 		    </div>
 		  </div>
 
-		  <div class="col-xs-4">
-		    <label for="LOCKSLOPE" class="control-label">lock slope</label>
-		  </div>
-		  <div class="col-xs-8">
-		    <div class="input-group">
-		      <input type="checkbox" value="" id="LOCKSLOPE">
+		  <div class="row">
+		    <div class="col-xs-6">
+		      <label for="LOCKSLOPE" class="control-label">lock slope</label>
+		    </div>
+		    <div class="col-xs-4">
+		      <div class="input-group">
+		        <input type="checkbox" value="" id="LOCKSLOPE">
+		      </div>
 		    </div>
 		  </div>
 
-		  <div class="col-xs-4">
-		    <label for="XLOCK" class="control-label">xlock</label>
-		  </div>
-		  <div class="col-xs-8">
-		    <div class="input-group">
-		      <input type="number" class="form-control" id="XLOCK" placeholder="">
+		  <div class="row">
+		    <div class="col-xs-4">
+		      <label for="XLOCK" class="control-label">xlock</label>
+		    </div>
+		    <div class="col-xs-8">
+		      <div class="input-group">
+		        <input type="number" class="form-control" id="XLOCK" placeholder="">
+		      </div>
 		    </div>
 		  </div>
 
-		  <div class="col-xs-4">
-		    <label for="YLOCK" class="control-label">ylock</label>
-		  </div>
-		  <div class="col-xs-8">
-		    <div class="input-group">
-		      <input type="number" class="form-control" id="YLOCK" placeholder="">
+		  <div class="row">
+		    <div class="col-xs-4">
+		      <label for="YLOCK" class="control-label">ylock</label>
+		    </div>
+		    <div class="col-xs-8">
+		      <div class="input-group">
+		        <input type="number" class="form-control" id="YLOCK" placeholder="">
+		      </div>
 		    </div>
 		  </div>
 
-		  <div class="col-xs-4">
-		    <label for="SLOW_ACCUM" class="control-label">accumulations (2^x)</label>
-		  </div>
-		  <div class="col-xs-8">
-		    <div class="input-group">
-		      <input type="number" class="form-control" id="SLOW_ACCUM" placeholder="">
+		  <div class="row">
+		    <div class="col-xs-4">
+		      <label for="SLOW_ACCUM" class="control-label">2^x accumulations</label>
+		    </div>
+		    <div class="col-xs-8">
+		      <div class="input-group">
+		        <input type="number" class="form-control" id="SLOW_ACCUM" placeholder="">
+		      </div>
 		    </div>
 		  </div>
 
-		  <div class="col-xs-4">
-		    <label for="PGAIN" class="control-label">proportional</label>
-		  </div>
-		  <div class="col-xs-8">
-		    <div class="input-group">
-		      <input type="number" class="form-control" id="PGAIN" placeholder="" step="0.10000" min="-65536" max="65535.99995">
+		  <div class="row">
+		    <div class="col-xs-4">
+		      <label for="PGAIN" class="control-label">proportional</label>
+		    </div>
+		    <div class="col-xs-8">
+		      <div class="input-group">
+		        <input type="number" class="form-control" id="PGAIN" placeholder="" step="0.10000" min="-65536" max="65535.99995">
+		      </div>
 		    </div>
 		  </div>
 
-		  <div class="col-xs-4">
-		    <label for="IGAIN" class="control-label">integral</label>
-		  </div>
-		  <div class="col-xs-8">
-		    <div class="input-group">
-		      <input type="number" class="form-control" id="IGAIN" placeholder="" step="0.10000" min="-65536" max="65535.99995">
+		  <div class="row">
+		    <div class="col-xs-4">
+		      <label for="IGAIN" class="control-label">integral</label>
+		    </div>
+		    <div class="col-xs-8">
+		      <div class="input-group">
+		        <input type="number" class="form-control" id="IGAIN" placeholder="" step="0.10000" min="-65536" max="65535.99995">
+		      </div>
 		    </div>
 		  </div>
 
-		  <div class="col-xs-4">
-		    <label for="DGAIN" class="control-label">derivative</label>
-		  </div>
-		  <div class="col-xs-8">
-		    <div class="input-group">
-		      <input type="number" class="form-control" id="DGAIN" placeholder="" step="0.10000" min="-65536" max="65535.99995">
+		  <div class="row">
+		    <div class="col-xs-4">
+		      <label for="DGAIN" class="control-label">derivative</label>
+		    </div>
+		    <div class="col-xs-8">
+		      <div class="input-group">
+		        <input type="number" class="form-control" id="DGAIN" placeholder="" step="0.10000" min="-65536" max="65535.99995">
+		      </div>
 		    </div>
 		  </div>
 
-		  <div class="col-xs-4">
-		    <label for="PGAIN2" class="control-label">proportional (fast)</label>
-		  </div>
-		  <div class="col-xs-8">
-		    <div class="input-group">
-		      <input type="number" class="form-control" id="PGAIN2" placeholder="" step="0.10000" min="-65536" max="65535.99995">
+		  <div class="row">
+		    <div class="col-xs-4">
+		      <label for="PGAIN2" class="control-label">proportional (fast)</label>
+		    </div>
+		    <div class="col-xs-8">
+		      <div class="input-group">
+		        <input type="number" class="form-control" id="PGAIN2" placeholder="" step="0.10000" min="-65536" max="65535.99995">
+		      </div>
 		    </div>
 		  </div>
 
@@ -155,68 +177,80 @@
 		<div class="form-group">
 
 		  <!-- BEGIN parameter number fields -->
-		  <div class="col-xs-4">
+		  <!--<div class="col-xs-4">
 		    <label for="RUN" class="control-label">run</label>
 		  </div>
 		  <div class="col-xs-8">
 		    <div class="input-group">
 		      <input type="checkbox" value="" id="RUN">
 		    </div>
-		  </div>
+		  </div>-->
 
-		  <div class="col-xs-4">
-		    <label for="OPENCLOSE" class="control-label">closed/open</label>
-		  </div>
-		  <div class="col-xs-8">
-		    <div class="input-group">
-		      <input type="checkbox" value="" id="OPENCLOSE">
+		  <div class="row">
+		    <div class="col-xs-4">
+		      <label for="OPENCLOSE" class="control-label">closed/open</label>
+		    </div>
+		    <div class="col-xs-8">
+		      <div class="input-group">
+		        <input type="checkbox" value="" id="OPENCLOSE">
+		      </div>
 		    </div>
 		  </div>
 
-		  <div class="col-xs-4">
-		    <label for="TIMEX_TIMEY_XY" class="control-label">oscilloscope mode</label>
-		  </div>
-		  <div class="col-xs-8">
-		    <select class="form-control" id="MODE">
-		      <option value="0">TIME - X</option>
-		      <option value="1">TIME - Y</option>
-		      <option value="2">X - Y</option>
-		    </select>
-		  </div>
-
-		  <div class="col-xs-4">
-		    <label for="ADC_CLKDIV" class="control-label">ADC clkdiv</label>
-		  </div>
-		  <div class="col-xs-8">
-		    <div class="input-group">
-		      <input type="number" class="form-control" id="ADC_CLKDIV" placeholder="">
+		  <div class="row">
+		    <div class="col-xs-4">
+		      <label for="TIMEX_TIMEY_XY" class="control-label">oscilloscope mode</label>
+		    </div>
+		    <div class="col-xs-8">
+		      <select class="form-control" id="MODE">
+		        <option value="0">TIME - X</option>
+		        <option value="1">TIME - Y</option>
+		        <option value="2">X - Y</option>
+		      </select>
 		    </div>
 		  </div>
 
-		  <div class="col-xs-4">
-		    <label for="ADC_AVERAGE" class="control-label">ADC average</label>
-		  </div>
-		  <div class="col-xs-8">
-		    <div class="input-group">
-		      <input type="number" class="form-control" id="ADC_AVERAGE" placeholder="">
+		  <div class="row">
+		    <div class="col-xs-4">
+		      <label for="ADC_CLKDIV" class="control-label">ADC clkdiv</label>
+		    </div>
+		    <div class="col-xs-8">
+		      <div class="input-group">
+		        <input type="number" class="form-control" id="ADC_CLKDIV" placeholder="">
+		      </div>
 		    </div>
 		  </div>
 
-		  <div class="col-xs-4">
-		    <label for="ADC_OPENDELAY" class="control-label">ADC open delay</label>
-		  </div>
-		  <DIV Class="col-xs-8">
-		    <div class="input-group">
-		      <input type="number" class="form-control" id="ADC_OPENDELAY" placeholder="">
+		  <div class="row">
+		    <div class="col-xs-4">
+		      <label for="ADC_AVERAGE" class="control-label">ADC average</label>
+		    </div>
+		    <div class="col-xs-8">
+		      <div class="input-group">
+		        <input type="number" class="form-control" id="ADC_AVERAGE" placeholder="">
+		      </div>
 		    </div>
 		  </div>
 
-		  <div class="col-xs-4">
-		    <label for="ADC_CLOSEDDELAY" class="control-label">ADC closed delay</label>
+		  <div class="row">
+		    <div class="col-xs-4">
+		      <label for="ADC_OPENDELAY" class="control-label">ADC open delay</label>
+		    </div>
+		    <DIV Class="col-xs-8">
+		      <div class="input-group">
+		        <input type="number" class="form-control" id="ADC_OPENDELAY" placeholder="">
+		      </div>
+		    </div>
 		  </div>
-		  <div class="col-xs-8">
-		    <div class="input-group">
-		      <input type="number" class="form-control" id="ADC_CLOSEDDELAY" placeholder="">
+
+		  <div class="row">
+		    <div class="col-xs-4">
+		      <label for="ADC_CLOSEDDELAY" class="control-label">ADC closed delay</label>
+		    </div>
+		    <div class="col-xs-8">
+		      <div class="input-group">
+		        <input type="number" class="form-control" id="ADC_CLOSEDDELAY" placeholder="">
+		      </div>
 		    </div>
 		  </div>
 
@@ -232,75 +266,91 @@
 	      <form class="form-inline" autocomplete="off">
 		<div class="form-group">
 
-		  <div class="col-xs-4">
-		    <label for="IN1" class="control-label">IN1</label>
-		  </div>
-		  <div class="col-xs-8">
-		    <div class="input-group">
-		      <input type="checkbox" value="" id="IN1">
+		  <div class="row">
+		    <div class="col-xs-6">
+		      <label for="IN1" class="control-label">IN1</label>
+		    </div>
+		    <div class="col-xs-4">
+		      <div class="input-group">
+		        <input type="checkbox" value="" id="IN1">
+		      </div>
 		    </div>
 		  </div>
 
-		  <div class="col-xs-4">
-		    <label for="IN2" class="control-label">IN2</label>
+		  <div class="row">
+      		    <div class="col-xs-6">
+  		      <label for="IN4" class="control-label">IN4</label>
+  		    </div>
+  		    <div class="col-xs-4">
+  		      <div class="input-group">
+  		        <input type="checkbox" value="" id="IN4">
+  		      </div>
+  		    </div>
 		  </div>
-		  <div class="col-xs-8">
-		    <div class="input-group">
-		      <input type="checkbox" value="" id="IN2">
+
+		  <div class="row">
+		    <div class="col-xs-6">
+		      <label for="IN3" class="control-label">IN3</label>
+		    </div>
+		    <div class="col-xs-4">
+		      <div class="input-group">
+		        <input type="checkbox" value="" id="IN3">
+		      </div>
 		    </div>
 		  </div>
 
-		  <div class="col-xs-4">
-		    <label for="IN3" class="control-label">IN3</label>
-		  </div>
-		  <div class="col-xs-8">
-		    <div class="input-group">
-		      <input type="checkbox" value="" id="IN3">
+		  <div class="row">
+		    <div class="col-xs-6">
+		      <label for="IN6" class="control-label">IN6</label>
+		    </div>
+		    <div class="col-xs-4">
+		      <div class="input-group">
+		        <input type="checkbox" value="" id="IN6">
+		      </div>
 		    </div>
 		  </div>
 
-		  <div class="col-xs-4">
-		    <label for="IN4" class="control-label">IN4</label>
-		  </div>
-		  <div class="col-xs-8">
-		    <div class="input-group">
-		      <input type="checkbox" value="" id="IN4">
+		  <div class="row">
+		    <div class="col-xs-6">
+		      <label for="FAST1" class="control-label">FAST1</label>
+		    </div>
+		    <div class="col-xs-4">
+		      <div class="input-group">
+		        <input type="checkbox" value="" id="FAST1">
+		      </div>
 		    </div>
 		  </div>
 
-		  <div class="col-xs-4">
-		    <label for="FAST1" class="control-label">FAST1</label>
-		  </div>
-		  <div class="col-xs-8">
-		    <div class="input-group">
-		      <input type="checkbox" value="" id="FAST1">
+		  <div class="row">
+		    <div class="col-xs-6">
+		      <label for="FAST4" class="control-label">FAST4</label>
+		    </div>
+		    <div class="col-xs-4">
+		      <div class="input-group">
+		        <input type="checkbox" value="" id="FAST4">
+		      </div>
 		    </div>
 		  </div>
 
-		  <div class="col-xs-4">
-		    <label for="FAST2" class="control-label">FAST2</label>
-		  </div>
-		  <div class="col-xs-8">
-		    <div class="input-group">
-		      <input type="checkbox" value="" id="FAST2">
+		  <div class="row">
+		    <div class="col-xs-6">
+		      <label for="SLOW1" class="control-label">SLOW1</label>
+		    </div>
+		    <div class="col-xs-4">
+		      <div class="input-group">
+		        <input type="checkbox" value="" id="SLOW1">
+		      </div>
 		    </div>
 		  </div>
 
-		  <div class="col-xs-4">
-		    <label for="SLOW1" class="control-label">SLOW1</label>
-		  </div>
-		  <div class="col-xs-8">
-		    <div class="input-group">
-		      <input type="checkbox" value="" id="SLOW1">
+		  <div class="row">
+		    <div class="col-xs-6">
+		      <label for="SLOW4" class="control-label">SLOW4</label>
 		    </div>
-		  </div>
-
-		  <div class="col-xs-4">
-		    <label for="SLOW2" class="control-label">SLOW2</label>
-		  </div>
-		  <div class="col-xs-8">
-		    <div class="input-group">
-		      <input type="checkbox" value="" id="SLOW2">
+		    <div class="col-xs-4">
+		      <div class="input-group">
+		        <input type="checkbox" value="" id="SLOW4">
+		      </div>
 		    </div>
 		  </div>
 
