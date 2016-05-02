@@ -80,15 +80,15 @@
         MOV r9.w2, r7.w0                // DAC value
 
       /* OSCILLOSCOPE TRIGGER LOGIC */
-      CLR r4.t29                          // clear write this step flag
-      QBBC SCAN_LOGIC, r4.t30             // no need for writing if trigger not reached
-      QBEQ OPEN_ACCUM_FULL, r6.w0, r6.w2  // if number of accumulations reached
-      ADD r6.w0, r6.w0, 1                 // increase accumulation
-      QBA SCAN_LOGIC                      // skip write step
+      CLR r4.t29                        // clear write this step flag
+      QBBC SCAN_LOGIC, r4.t30           // no need for writing if trigger not reached
+      QBEQ WRITE_STEP, r6.w0, r6.w2     // if number of accumulations reached
+      ADD r6.w0, r6.w0, 1               // increase accumulation
+      QBA SCAN_LOGIC                    // skip write step
 
-      OPEN_ACCUM_FULL:
+      WRITE_STEP:
         MOV r6.w0, 0x0                  // clear accumulator counts
-        LSR r6.w2, r10.w0, 10           // prepare number of skips (assumes DAC steps of 1)
+        MOV r6.w2, r15.w0               // prepare number of skips
         SET r4.t29                      // write this step
 
       /* OPEN LOOP SCANNING LOGIC */
@@ -98,11 +98,12 @@
 
       SCANUP:
         ADD r2, r2, r10.w0              // test whether upper amplitude reached 
-        QBLE TOGGLE_DIRECTION, r7, r2   // toggle direction if upper amplitude reached
+        QBEQ TEST_UPPER, r2.w2, 0       // check whether upper limit exceeds 65535
         MOV r2, 0xffff
-        QBEQ TOGGLE_DIRECTION, r7, r2   // toggle direction if max amplitude reached
-        ADD r7, r7, 1                   // else increase DAC output
-        QBA ENDOPENLOOP        
+        TEST_UPPER:
+          QBLE TOGGLE_DIRECTION, r7, r2 // toggle direction if upper amplitude reached
+          ADD r7, r7, 1                 // else increase DAC output
+          QBA ENDOPENLOOP        
 
       SCANDOWN:
         SUB r2, r2, r10.w0              // test whether lower amplitude reached
@@ -116,10 +117,12 @@
       PRE_TOGGLE_DIR:
         QBBC TOGGLE_DIRECTION, r4.t31   // no writing yet
         SET r4.t30                      // trigger for begin write out
+        SET r4.t29                      // write this step
+        MOV r6.w2, r15.w0               // prepare number of skips
 
       TOGGLE_DIRECTION:
         MOV r7, r2                      // MOV min/max amplitude to DAC output
-        XOR r4.b2, r4.b2, 1             // TOGGLE scan UP/DOWN
+        XOR r4.b2, r4.b2, 1             // TOGGLE scan UP/DOWN r4.t16
       LOAD_ADC_PARS:                    // LOAD new ADC parameters on open loop only
         JAL r23.w0, SETUP_ADC           // setup ADC subroutine (only on open loop toggle direction)
         SET r4.t17                      // prime semiclosed loop
@@ -127,16 +130,16 @@
       ENDOPENLOOP:
       
       /* OPEN LOOP SPI OUT */
-        SPI_OPEN_BUILDWORD:               // prepare data for sending to DAC AD5545
+        SPI_OPEN_BUILDWORD:             // prepare data for sending to DAC AD5545
           MOV r1, r7.w0 
           MOV r1.w2, 0x2                // SET r1.t17 -- target slow DAC output
   
         SPI_OPEN_SEND:
-          SBBO r1, r22, SPI_TX0, 4        // word to transmit 
+          SBBO r1, r22, SPI_TX0, 4      // word to transmit 
 
         SPI_OPEN_END:
           QBBS WRITEDATA, r4.t29
-          QBBC ARM_INTERRUPT, r4.t31      // check interrupt if write disabled
+          QBBC ARM_INTERRUPT, r4.t31    // check interrupt if write disabled
           QBA INT_CHECK
 
 /* STORING DATA TO MEMORY AND INTERRUPT IN HANDLING */
@@ -279,6 +282,7 @@
 
       LBBO r6.b3, r1, SLOW_ACCUM, 1     // load number of accumulations for slow DAC
       LBBO r10, r1, OPEN_POINT_AMPL, 4  // load open loop ramp scan point and amplitude
+      LBBO r15, r1, OSC_STEP, 4         // load open loop oscilloscope step
       LBBO r11, r1, XLOCK_YLOCK, 4      // w2: DAC set point (for scan to)
                                         // w0: ADC set point
 

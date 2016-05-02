@@ -149,6 +149,9 @@ unsigned int mysqlGetParameters(MYSQL *conn, unsigned int *pruSharedDataMemory_i
 	unsigned int pruBooleans        = 0x0;
 	unsigned int xlock_ylock        = 0x0;
 	unsigned int open_point_ampl    = 0x0;
+	unsigned int scanPoint = 1;	// ensure scanPoint and openAmpl are initialised
+	unsigned int openAmpl = 1;
+        unsigned int span;
 	//unsigned int ireset_pos_neg     = 0x0;
 
 	mysql_query(conn, "SELECT addr, value FROM parameters");
@@ -200,11 +203,16 @@ unsigned int mysqlGetParameters(MYSQL *conn, unsigned int *pruSharedDataMemory_i
 				break;
 
 			// pack SCANPOINT and OPENAMPL:
+                        case 5 :
+                                // this case is reserved for OSC_STEP
+                                break;
 			case 13 :	
 				open_point_ampl |= (mem_value & 0xffff);        // OPENAMPL
+                                openAmpl = (mem_value & 0xffff);
 				break;
 			case 14 : 			
 				open_point_ampl |= ((mem_value & 0xffff) << 16);// SCANPOINT
+                                scanPoint = (mem_value & 0xffff);
 				break;
 
                         // mask SLOW ACCUMULATOR value
@@ -243,6 +251,21 @@ unsigned int mysqlGetParameters(MYSQL *conn, unsigned int *pruSharedDataMemory_i
 	*(pruSharedDataMemory_int + 2) = xlock_ylock;          
 	*(pruSharedDataMemory_int + 13) = open_point_ampl;    
 	//*(pruSharedDataMemory_int + 21) = ireset_pos_neg;    
+
+        // calculate open loop oscilloscope step, and send to PRU
+        if(openAmpl>scanPoint){
+                span = scanPoint + openAmpl;
+        } else if (openAmpl > (65535-scanPoint)) {
+                span = 65535 - scanPoint + openAmpl;
+        } else {
+                span = 2*openAmpl;
+        }
+        if (span > 65536) {             // handle case where openAmpl exceeds both limits
+                span = 65535;
+        }
+
+        // calculate OSC_STEP and send to PRU
+        *(pruSharedDataMemory_int + 5) = span/2047;
 
 	// clean up and return runScope
 	mysql_free_result(result);	
