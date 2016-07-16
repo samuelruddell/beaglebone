@@ -15,7 +15,7 @@
 
 	module.exports = {
 		// Connect and maintain database connection.
-		connect: function () {
+		connect: function (callback) {
 			console.log('Database: attempting to connect to MySQL instance: %s@%s', 
 				configs.username, configs.host)
 
@@ -32,6 +32,7 @@
 					console.error('Database: FATAL - failed to connect to MySQL instance (%s)', err)
 				} else {
 					console.log('Database: connection created successfully.')
+					if (callback) callback();
 				}
 			})
 		},

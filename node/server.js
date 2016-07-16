@@ -9,20 +9,11 @@ var express 		= require('express'),
     router 		= require('./router'),
     database 		= require('./database'),
     sockets 		= require('./sockets'),
-    b			= require('bonescript')
+    gpio		= require('./gpio')
 
-// initialise pins
-b.pinMode('P8_9', b.OUTPUT)
-b.pinMode('P8_34', b.OUTPUT)
-b.pinMode('P8_32', b.OUTPUT)
-b.pinMode('P8_7', b.OUTPUT)
-b.pinMode('P8_11', b.OUTPUT)
-b.pinMode('P8_13', b.OUTPUT)
-b.pinMode('P8_15', b.OUTPUT)
-b.pinMode('P8_17', b.OUTPUT) 
 
 // Attempt to open a connection to the configured database.
-if (database.connect()) {
+if (database.connect(function () {gpio.init()})) {
   console.log('Server: failed to establish database connection. Exiting.')
   return
 }
