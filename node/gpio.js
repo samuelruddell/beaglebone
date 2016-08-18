@@ -15,21 +15,17 @@
 		var pinName;
 
 		if (row.name == 'IN1') {
-			pinName = 'P8_9'
+			pinName = 'P9_24'
 		} else if (row.name == 'IN2') {
-			pinName = 'P8_34'
+			pinName = 'P9_26'
 		} else if (row.name == 'IN3') {
-			pinName = 'P8_32'	
+			pinName = 'P9_25'	
 		} else if (row.name == 'IN4') {
-			pinName = 'P8_7'
-		} else if (row.name == 'FAST1') {
-			pinName = 'P8_11'
-		} else if (row.name == 'FAST2') {
-			pinName = 'P8_13'
+			pinName = 'P9_23'
 		} else if (row.name == 'SLOW1') {
-			pinName = 'P8_15'
+			pinName = 'P8_7'
 		} else if (row.name == 'SLOW2') {
-			pinName = 'P8_17'
+			pinName = 'P8_9'
 		}
 
 		if (row.value) {
@@ -46,23 +42,21 @@
 		init: function () {
 			// initialise hardware
 
-			b.pinMode('P8_9', b.OUTPUT)
-			b.pinMode('P8_34', b.OUTPUT)
-			b.pinMode('P8_32', b.OUTPUT)
+			b.pinMode('P9_24', b.OUTPUT)
+			b.pinMode('P9_26', b.OUTPUT)
+			b.pinMode('P9_25', b.OUTPUT)
+			b.pinMode('P9_23', b.OUTPUT)
 			b.pinMode('P8_7', b.OUTPUT)
-			b.pinMode('P8_11', b.OUTPUT)
-			b.pinMode('P8_13', b.OUTPUT)
-			b.pinMode('P8_15', b.OUTPUT)
-			b.pinMode('P8_17', b.OUTPUT) 
+			b.pinMode('P8_9', b.OUTPUT) 
 
-			database.query('SELECT ?? FROM ?? WHERE ?? > 100 AND ?? < 109', [['name','value'],'parameters','addr','addr'], function(data) {
-				var row, array
-				for (var rows in data) {
-					
-					setup(data[rows])
-				}
-
-			})
+			//database.query('SELECT ?? FROM ?? WHERE ?? > 100 AND ?? < 109', [['name','value'],'parameters','addr','addr'], function(data) {
+		//		var row, array
+		//		for (var rows in data) {
+		//			
+		//			setup(data[rows])
+		//		}
+//
+//			})
 
 		}
 	}	

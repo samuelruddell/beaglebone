@@ -49,51 +49,39 @@ module.exports = function (app) {
 mux = function(val, callback) {
 	if (val[1] == 'IN1'){
 		if (val[0] == 1){
-			b.digitalWrite('P8_9', b.HIGH)
+			b.digitalWrite('P9_24', b.HIGH)
 		} else {
-			b.digitalWrite('P8_9', b.LOW)
+			b.digitalWrite('P9_24', b.LOW)
 		}
 	} else if (val[1] == 'IN2'){
 		if (val[0] == 1){
-			b.digitalWrite('P8_34', b.HIGH)
+			b.digitalWrite('P9_26', b.HIGH)
 		} else {
-			b.digitalWrite('P8_34', b.LOW)
+			b.digitalWrite('P9_26', b.LOW)
 		}
 	} else if (val[1] == 'IN3'){
 		if (val[0] == 1){
-			b.digitalWrite('P8_32', b.HIGH)
+			b.digitalWrite('P9_25', b.HIGH)
 		} else {
-			b.digitalWrite('P8_32', b.LOW)
+			b.digitalWrite('P9_25', b.LOW)
 		}
 	} else if (val[1] == 'IN4'){
 		if (val[0] == 1){
-			b.digitalWrite('P8_7', b.HIGH)
+			b.digitalWrite('P9_23', b.HIGH)
 		} else {
-			b.digitalWrite('P8_7', b.LOW)
-		}
-	} else if (val[1] == 'FAST1'){
-		if (val[0] == 1){
-			b.digitalWrite('P8_11', b.HIGH)
-		} else {
-			b.digitalWrite('P8_11', b.LOW)
-		}
-	} else if (val[1] == 'FAST2'){
-		if (val[0] == 1){
-			b.digitalWrite('P8_13', b.HIGH)
-		} else {
-			b.digitalWrite('P8_13', b.LOW)
+			b.digitalWrite('P9_23', b.LOW)
 		}
 	} else if (val[1] == 'SLOW1'){
 		if (val[0] == 1){
-			b.digitalWrite('P8_15', b.HIGH)
+			b.digitalWrite('P8_7', b.LOW)
 		} else {
-			b.digitalWrite('P8_15', b.LOW)
+			b.digitalWrite('P8_7', b.HIGH)
 		}
 	} else if (val[1] == 'SLOW2'){
 		if (val[0] == 1){
-			b.digitalWrite('P8_17', b.HIGH)
+			b.digitalWrite('P8_9', b.LOW)
 		} else {
-			b.digitalWrite('P8_17', b.LOW)
+			b.digitalWrite('P8_9', b.HIGH)
 		}
 	}
 };
