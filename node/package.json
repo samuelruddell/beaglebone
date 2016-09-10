@@ -4,17 +4,20 @@
   "description": "Beaglebone Black PID controller - interface server",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "postinstall": "node scripts/install.js"
   },
   "author": "Samuel Ruddell",
   "license": "MIT",
   "dependencies": {
+    "bonescript": "^0.5.0",
+    "bootstrap": "~3.3.6",
     "express": "^4.13.3",
+    "flot": "^0.8.0-alpha",
     "fs": "0.0.2",
     "http": "0.0.0",
+    "jquery": "~2.2.0",
     "mysql": "~2.9.0",
-    "socket.io": "~1.3.7",
-    "bootstrap": "~3.3.6",
-    "jquery": "~2.2.0"
+    "socket.io": "~1.3.7"
   }
 }
