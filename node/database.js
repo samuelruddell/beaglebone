@@ -24,7 +24,8 @@
 				port		: configs.port,
 				user		: configs.username,
 				password	: configs.password,
-				database	: configs.database
+				database	: configs.database,
+				connectTimeout  : configs.connectTimeout
 			})
 
 			connection.connect(function(err) {

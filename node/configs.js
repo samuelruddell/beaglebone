@@ -22,10 +22,10 @@
 		// Database connection string configs.
 		host	 	: "localhost",
 		port	 	: 3306,
-
 		database 	: "scope",
 		username 	: "samuel",
-		password 	: ""
+		password 	: "",
+		connectTimeout	: 60000
 	}
 
 	//
