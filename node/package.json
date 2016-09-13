@@ -10,7 +10,6 @@
   "author": "Samuel Ruddell",
   "license": "MIT",
   "dependencies": {
-    "bonescript": "^0.5.0",
     "bootstrap": "~3.3.6",
     "express": "^4.13.3",
     "flot": "^0.8.0-alpha",

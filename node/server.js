@@ -8,12 +8,11 @@ var express 		= require('express'),
     configs 		= require('./configs').server,
     router 		= require('./router'),
     database 		= require('./database'),
-    sockets 		= require('./sockets'),
-    gpio		= require('./gpio')
+    sockets 		= require('./sockets')
 
 
 // Attempt to open a connection to the configured database.
-if (database.connect(function () {gpio.init()})) {
+if (database.connect()) {
   console.log('Server: failed to establish database connection. Exiting.')
   return
 }
