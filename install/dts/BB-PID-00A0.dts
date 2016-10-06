@@ -1,0 +1,112 @@
+/* author: Samuel Ruddell <sam.ruddell@auckland.ac.nz> */
+
+/dts-v1/;
+/plugin/;
+
+/ {
+  	compatible = "ti,beaglebone", "ti,beaglebone-black";
+
+       /* identification */
+       part-number = "BB-PID";
+       version = "00A0";
+
+       /* state the resources this cape uses */
+       exclusive-use =
+               /* the pin header uses */
+	       "P9.17",	       /* spi0 chip select */
+	       "P9.21",        /* spi0 data */
+	       "P9.22",        /* spi0 clock */
+               "P9.23",        /* gpio1_17 */
+               "P9.24",        /* gpio0_15 */
+               "P9.25",        /* gpio3_21 */
+               "P9.26",        /* gpio0_14 */
+               "P8.7",         /* gpio2_2 */
+               "P8.9",         /* gpio2_5 */
+               /* hardware */
+	       "pru0",
+	       "pru1",
+	       "spi0",
+	       "tscadc";
+
+       fragment@0 {
+               target = <&am33xx_pinmux>;
+               __overlay__ {
+                       pru_pru_pins: pinmux_pru_pru_pins {
+                               pinctrl-single,pins = <
+                               >;
+                       };
+
+		       spi0_pins: spi0_pins {
+                               pinctrl-single,pins = <
+                                       0x150 0x30	/* spi0_sclk, INPUT_PULLUP | MODE0 */
+                                       0x154 0x30	/* spi0_d0, INPUT_PULLUP | MODE0 */
+                                       0x15c 0xf	/* spi0_cs0, INPUT_PULLUP | MODE0 */
+                               >;
+                       };
+
+		       gpio_pins: gpio_pins {
+                               pinctrl-single,pins = <
+                                       0x044 0xf	/* gpio1_17, PULLDOWN | MODE7 */
+                                       0x184 0xf	/* gpio0_15, PULLDOWN | MODE7 */
+                                       0x1ac 0xf	/* gpio3_21, PULLDOWN | MODE7 */
+                                       0x180 0xf	/* gpio0_14, PULLDOWN | MODE7 */
+                                       0x090 0xf	/* gpio2_2, PULLDOWN | MODE7 */
+                                       0x09c 0xf	/* gpio2_5, PULLDOWN | MODE7 */
+                               >;
+                       };
+               };
+       };
+       
+       fragment@1 {
+               target = <&ocp>;
+               __overlay__ {
+	       #address-cells = <1>;
+	       #size-cells = <1>;
+
+		       tscadc {
+		       		compatible = "ti,ti-tscadc";
+				reg = <0x44e0d000 0x1000>;
+
+				interrupt-parent = <&intc>;
+				interrupts = <16>;
+				ti,hwmods = "adc_tsc";
+                        	status = "okay";
+
+				adc {
+					ti,adc-channels = <0 1 2 3 4 5 6 7>;
+				};
+			};
+
+			gpio {
+				status = "okay";
+
+                                pinctrl-names = "default";
+                                pinctrl-0 = <&gpio_pins>;
+			};
+		};
+	};
+
+
+
+       fragment@2 {
+               target = <&pruss>;
+               __overlay__ {
+                       status = "okay";
+
+                       pinctrl-names = "default";
+                       pinctrl-0 = <&pru_pru_pins>;
+               };
+       };
+
+       fragment@3 {
+               target = <&spi0>;
+               __overlay__ {
+		       #address-cells = <1>;
+		       #size-cells = <0>;
+
+                       status = "okay";
+		       pinctrl-names = "default";
+		       pinctrl-0 = <&spi0_pins>;
+               };
+       };
+};
