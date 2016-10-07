@@ -27,6 +27,7 @@
 #define GPIO2 		0x481ac000
 #define GPIO3 		0x481ae000
 #define GPIO_SIZE	0xfff
+#define GPIO_OE		0x134
 #define GPIO_CLR	0x190
 #define GPIO_SET	0x194
 
@@ -54,8 +55,8 @@ int main (int argc, char **argv)
 	struct GpioAddr gpio;
 
 	/* enable gpio clocks */
-	unsigned int * clkAddr;
-	void * clk_ctrl;
+	volatile unsigned int *clkAddr = NULL;
+	volatile void *clk_ctrl = NULL;
 
 	clk_ctrl = mmap(0, 4096, PROT_READ | PROT_WRITE, MAP_SHARED, fd, CM_PER);
 
@@ -72,6 +73,26 @@ int main (int argc, char **argv)
 	gpio.gpio1_addr = mmap(0, GPIO_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, GPIO1);
 	gpio.gpio2_addr = mmap(0, GPIO_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, GPIO2);
 	gpio.gpio3_addr = mmap(0, GPIO_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, GPIO3);
+
+	/* set output enable for GPIO we want to use */
+	unsigned int reg;	
+	volatile unsigned int *gpio_oe_addr = NULL;
+
+	gpio_oe_addr = gpio.gpio0_addr + GPIO_OE; 	// gpio0
+	reg = *gpio_oe_addr & (0xffffffff - (0b11 << 14));
+	*gpio_oe_addr = reg;
+
+	gpio_oe_addr = gpio.gpio1_addr + GPIO_OE; 	// gpio1
+	reg = *gpio_oe_addr & (0xffffffff - (1 << 17));
+	*gpio_oe_addr = reg;
+
+	gpio_oe_addr = gpio.gpio2_addr + GPIO_OE; 	// gpio2
+	reg = *gpio_oe_addr & (0xffffffff - ((1 << 2)|(1 << 5)));
+	*gpio_oe_addr = reg;
+
+	gpio_oe_addr = gpio.gpio3_addr + GPIO_OE; 	// gpio3
+	reg = *gpio_oe_addr & (0xffffffff - (1 << 21));
+	*gpio_oe_addr = reg;
 
 	/* connect to database */
 	conn = mysqlConnect();
