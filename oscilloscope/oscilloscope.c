@@ -420,24 +420,24 @@ int setMuxIn(struct GpioAddr gpio, int value) {
 	/* set gpio based on value */
 	switch (value) {
 		case 1 :
-			// P9_24 on
-			gpio.SetAddr = gpio.gpio0_addr + GPIO_SET;
-			*gpio.SetAddr = 1 << 15;
+			// P9_23 on
+			gpio.SetAddr = gpio.gpio1_addr + GPIO_SET;
+			*gpio.SetAddr = 1 << 17;
 			break;
 		case 2 :
-			// P9_26 on
-			gpio.SetAddr = gpio.gpio0_addr + GPIO_SET;
-			*gpio.SetAddr = 1 << 14;
-			break;
-		case 3 :
 			// P9_25 on
 			gpio.SetAddr = gpio.gpio3_addr + GPIO_SET;
 			*gpio.SetAddr = 1 << 21;
 			break;
+		case 3 :
+			// P9_26 on
+			gpio.SetAddr = gpio.gpio0_addr + GPIO_SET;
+			*gpio.SetAddr = 1 << 14;
+			break;
 		case 4 :
-			// P9_23 on
-			gpio.SetAddr = gpio.gpio1_addr + GPIO_SET;
-			*gpio.SetAddr = 1 << 17;
+			// P9_24 on
+			gpio.SetAddr = gpio.gpio0_addr + GPIO_SET;
+			*gpio.SetAddr = 1 << 15;
 			break;
 		default :
 			// else all off
