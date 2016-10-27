@@ -5,7 +5,6 @@
 //
 
 var database = require('../database')
-var b = require('bonescript')
 
 module.exports = function (app) {
 
