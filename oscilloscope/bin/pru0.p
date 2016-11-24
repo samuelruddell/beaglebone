@@ -24,6 +24,8 @@ AWAIT:
         ADD r3, r3, r9.w0               // add current ADC reading to accumulator
         ADD r1.w0, r1.w0, 1             // increase accumulation
         QBBS ACCUM_FULL, r1, r1.b2      // if number of accumulations reached (powers of 2)
+    	CLR r4.t15                      // await trigger from PRU_1
+    	XOUT 10, r4, 4                  // store bools to broadside memory
         QBA AWAIT                       // more readings needed for accumulation averaging
 
         ACCUM_FULL:
@@ -144,4 +146,6 @@ QUIT:
 /* SUBROUTINES */
 CLR_INTEGRATOR:
     MOV r16, 0x0                        // clear integrator before closed loop starts
+    CLR r4.t15                          // await PRU_1 trigger
+    XOUT 10, r4, 4                      // store bools to broadside memory
     QBA AWAIT
